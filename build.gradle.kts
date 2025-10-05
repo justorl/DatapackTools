@@ -25,8 +25,6 @@ dependencies {
 
     modImplementation("net.fabricmc:fabric-language-kotlin:${property("fabric_kotlin_version")}")
     modImplementation("net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}")
-
-    modImplementation(include("xyz.meowing:vexel-1.20.1-fabric:1.0.7")!!)
 }
 
 tasks {
