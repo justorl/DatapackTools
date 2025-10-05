@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "datapacktools",
+  "version": "${version}",
+
+  "name": "DatapackTools",
+  "description": "Datapack tools!",
+  "authors": [
+    "o_orl"
+  ],
+
+  "license": "CC0-1.0",
+  "icon": "assets/datapacktools/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      {
+        "adapter": "kotlin",
+        "value": "com.pulse.datapacktools.main.DatapackTools"
+      }
+    ],
+    "client": [
+      {
+        "adapter": "kotlin",
+        "value": "com.pulse.datapacktools.client.DatapackToolsClient"
+      }
+    ]
+  },
+  "mixins": [
+    "datapacktools.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-api": "*",
+    "minecraft": "~${minecraft_version}",
+    "java": ">=17",
+    "fabric-language-kotlin": ">=${fabric_kotlin_version}"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}

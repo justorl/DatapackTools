@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.pulse.datapacktools.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "main.SessionAccessor"
+  ],
+  "client": [
+    "client.AbstractCommandBlockScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

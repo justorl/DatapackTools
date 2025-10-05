@@ -1,0 +1,14 @@
+{
+  "category.datapacktools": "Datapack Tools",
+  "key.datapacktools.export_key": "Export as Function",
+  "gui.datapacktools.export.export_button": "Export",
+  "gui.datapacktools.export.cancel": "Cancel",
+  "gui.datapacktools.export.enter_name": "Enter a name for the function:",
+  "gui.datapacktools.export.screen_title": "Export to Datapack Function",
+  "gui.datapacktools.export.replace_checkmark": "Replace Command with Function",
+  "gui.datapacktools.export.replace_checkmark.description": "If enabled, the original command in the command block will be replaced with a function call, and the others in the chain will be removed.",
+  "message.datapacktools.convert.start": "Converting...",
+  "message.datapacktools.convert.done": "Converted! Created function %s",
+  "message.datapacktools.convert.fail.already_exists": "Error: Function with that name already exists",
+  "message.datapacktool.convert.fail.no_permission": "Error: Not enough permissions"
+}
