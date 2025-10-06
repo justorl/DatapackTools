@@ -1,7 +1,6 @@
 package com.pulse.datapacktools.client.screen
 
 import com.pulse.datapacktools.client.packets.ClientPackets
-import com.pulse.datapacktools.client.util.PlayerUtil.openCommandBlockInFront
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.tooltip.Tooltip
@@ -52,7 +51,7 @@ class ExportFunctionScreen() : Screen(Text.translatable("gui.datapacktools.expor
         exportButton.active = false
 
         cancelButton = ButtonWidget.builder(Text.translatable("gui.datapacktools.export.cancel")) {
-            openCommandBlockInFront()
+            client?.setScreen(null)
         }.dimensions(width / 2 + 5, height / 2 + 50, 95, 20).build()
 
         addDrawableChild(functionNameField)

@@ -1,10 +1,10 @@
-package com.pulse.datapacktools.mixin.client;
+package com.pulse.datapacktools.mixin.client.compat;
 
+import bettercommandblockui.main.ui.screen.AbstractBetterCommandBlockScreen;
 import com.pulse.datapacktools.client.buttons.IconButtonWidget;
 import com.pulse.datapacktools.client.keybindings.ExportKeybinding;
 import com.pulse.datapacktools.client.screen.ExportFunctionScreen;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ingame.AbstractCommandBlockScreen;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,10 +13,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(AbstractCommandBlockScreen.class)
-public abstract class AbstractCommandBlockScreenMixin extends Screen {
+@Mixin(AbstractBetterCommandBlockScreen.class)
+public abstract class AbstractBetterCommandBlockScreenMixin extends Screen {
 
-    protected AbstractCommandBlockScreenMixin(Text title) {
+    protected AbstractBetterCommandBlockScreenMixin(Text title) {
         super(title);
     }
 
@@ -25,8 +25,8 @@ public abstract class AbstractCommandBlockScreenMixin extends Screen {
         if (client == null) return;
 
         this.addDrawableChild(new IconButtonWidget(
-                this.width / 2 + 4 + 150 + 4,
-                this.height / 4 + 120 + 12,
+                this.width - (10 + 20),
+                this.height - (10 + 20 + 30),
                 20, 20,
                 new Identifier("datapacktools", "textures/gui/export_button.png"),
                 b -> client.setScreen(new ExportFunctionScreen())

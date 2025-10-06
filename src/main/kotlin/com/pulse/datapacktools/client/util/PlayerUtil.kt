@@ -42,11 +42,4 @@ object PlayerUtil {
         }
         return null
     }
-
-    fun openCommandBlockInFront() {
-        val client = MinecraftClient.getInstance()
-        val player = client.player ?: return
-        val be = getCommandBlockInFront() ?: return
-        player.openCommandBlockScreen(be)
-    }
 }

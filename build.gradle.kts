@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.net.URI
 
 plugins {
     kotlin("jvm")
@@ -16,6 +17,11 @@ repositories {
     // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html
     // for more information about repositories.
+    maven { url = URI.create("https://jitpack.io") }
+    maven {
+        name = "Terraformers"
+        url = URI.create("https://maven.terraformersmc.com/")
+    }
 }
 
 dependencies {
@@ -25,6 +31,8 @@ dependencies {
 
     modImplementation("net.fabricmc:fabric-language-kotlin:${property("fabric_kotlin_version")}")
     modImplementation("net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}")
+
+    modCompileOnly("com.github.Tectato:BetterCommandBlockUI:1.20-SNAPSHOT")
 }
 
 tasks {
