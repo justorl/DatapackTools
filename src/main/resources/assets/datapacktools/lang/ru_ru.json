@@ -1,10 +1,15 @@
 {
   "category.datapacktools": "Инструменты для датапаков",
   "key.datapacktools.export_key": "Экспортировать в функцию",
+  "key.datapacktools.editor_key": "Редактор датапаков",
   "gui.datapacktools.export.export_button": "Экспорт",
   "gui.datapacktools.export.cancel": "Отмена",
   "gui.datapacktools.export.enter_name": "Введите имя функции:",
   "gui.datapacktools.export.screen_title": "Экспорт в функцию датапака",
   "gui.datapacktools.export.replace_checkmark": "Заменить команду функцией",
-  "gui.datapacktools.export.replace_checkmark.description": "Если включено, команда в исходном командном блоке будет заменена на вызов экспортированной функции, а остальные в цепочке будут удалены."
+  "gui.datapacktools.export.replace_checkmark.description": "Если включено, команда в исходном командном блоке будет заменена на вызов экспортированной функции, а остальные в цепочке будут удалены.",
+  "message.datapacktools.convert.start": "Конвертация...",
+  "message.datapacktools.convert.done": "Конвертировано! Создана функция %s",
+  "message.datapacktools.convert.fail.already_exists": "Ошибка: Функция с таким именем уже существует",
+  "message.datapacktool.convert.fail.no_permission": "Ошибка: Недостаточно прав"
 }

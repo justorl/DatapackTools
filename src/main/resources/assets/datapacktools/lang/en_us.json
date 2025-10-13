@@ -1,6 +1,7 @@
 {
   "category.datapacktools": "Datapack Tools",
   "key.datapacktools.export_key": "Export as Function",
+  "key.datapacktools.editor_key": "Datapack Editor",
   "gui.datapacktools.export.export_button": "Export",
   "gui.datapacktools.export.cancel": "Cancel",
   "gui.datapacktools.export.enter_name": "Enter a name for the function:",

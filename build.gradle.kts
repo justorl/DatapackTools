@@ -33,6 +33,7 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}")
 
     modCompileOnly("com.github.Tectato:BetterCommandBlockUI:1.20-SNAPSHOT")
+    modImplementation(include("xyz.meowing:vexel-1.20.1-fabric:105")!!)
 }
 
 tasks {

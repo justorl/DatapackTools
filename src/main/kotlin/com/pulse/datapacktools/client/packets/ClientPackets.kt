@@ -6,11 +6,40 @@ import net.minecraft.util.Identifier
 
 object ClientPackets {
     val CONVERT_PACKET = Identifier("datapacktools", "convert_commands")
+    val GET_FUNCTION_PACKET = Identifier("datapacktools", "get_function")
+    val SAVE_FUNCTION_PACKET = Identifier("datapacktools", "save_function")
+    val GET_FUNCTIONS_LIST_PACKET = Identifier("datapacktools", "get_functions_list")
+    val CREATE_FUNCTION_PACKET = Identifier("datapacktools", "create_function")
+    val FUNCTION_CREATED_PACKET = Identifier("datapacktools", "function_created")
 
     fun sendConvertPacket(functionName: String, changeCommand: Boolean) {
         val buf = PacketByteBufs.create()
         buf.writeString(functionName)
         buf.writeBoolean(changeCommand)
         ClientPlayNetworking.send(CONVERT_PACKET, buf)
+    }
+
+    fun sendGetFunctionPacket(functionName: String) {
+        val buf = PacketByteBufs.create()
+        buf.writeString(functionName)
+        ClientPlayNetworking.send(GET_FUNCTION_PACKET, buf)
+    }
+
+    fun sendSaveFunctionPacket(functionName: String, content: String) {
+        val buf = PacketByteBufs.create()
+        buf.writeString(functionName)
+        buf.writeString(content)
+        ClientPlayNetworking.send(SAVE_FUNCTION_PACKET, buf)
+    }
+
+    fun sendGetFunctionsListPacket() {
+        val buf = PacketByteBufs.create()
+        ClientPlayNetworking.send(GET_FUNCTIONS_LIST_PACKET, buf)
+    }
+
+    fun sendCreateFunctionPacket(functionName: String) {
+        val buf = PacketByteBufs.create()
+        buf.writeString(functionName)
+        ClientPlayNetworking.send(CREATE_FUNCTION_PACKET, buf)
     }
 }

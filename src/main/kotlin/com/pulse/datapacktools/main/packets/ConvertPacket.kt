@@ -41,9 +41,9 @@ object ConvertPacket {
         player.sendMessage(Text.translatable("message.datapacktools.convert.start").formatted(Formatting.GRAY, Formatting.ITALIC))
 
         val server = player.server
-        val worldDir: File? = SessionUtils.worldFolderPath?.toFile()
+        val worldDir: File = SessionUtils.worldFolderPath?.toFile() ?: return
         val commandList = mutableListOf<String>()
-        createDefaultDatapack(worldDir!!)
+        createDefaultDatapack(worldDir)
         val functionsDir = File(worldDir, "datapacks/${DATAPACK_NAME}/data/${DATAPACK_NAME}/functions")
 
         if (File(functionsDir, "${functionName}.mcfunction").exists()) {
