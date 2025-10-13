@@ -117,7 +117,6 @@ class DatapackEditorScreen : VexelScreen() {
         }
         
         ClientPlayNetworking.registerGlobalReceiver(ClientPackets.FUNCTION_CREATED_PACKET) { client, handler, buf, responseSender ->
-            val functionName = buf.readString()
             client.execute {
                 loadFunctionsList()
             }
@@ -146,15 +145,10 @@ class DatapackEditorScreen : VexelScreen() {
         functions.filter { it.isNotEmpty() }.forEach { functionName ->
             val isCurrentFunction = currentFunction == functionName
 
-            val hoverColor = if (isCurrentFunction) 0xFF0554A3.toInt() else 0xFF282828.toInt()
-            val pressedColor = if (isCurrentFunction) 0xFF034B94.toInt() else 0xFF252525.toInt()
-
             val button = Button(functionName)
                 .setPositioning(0f, Pos.ParentPixels, yOffset, Pos.ParentPixels)
                 .setSizing(100f, Size.ParentPerc, 25f, Size.Pixels)
-                .backgroundColor(if (isCurrentFunction) 0xFF0066CC.toInt() else 0xFF333333.toInt())
-                .hoverColor(hoverColor)
-                .pressedColor(pressedColor)
+                .backgroundColor(0x00000000)
                 .onClick { _, _, _ ->
                     if (!isCurrentFunction) {
                         currentFunction = functionName

@@ -33,7 +33,7 @@ object GetFunctionsListPacket {
 
         val functions = functionsDir.listFiles { file ->
             file.isFile && file.extension == "mcfunction" && file.name.isNotEmpty()
-        }
+        }.map { it.nameWithoutExtension }
 
         val buf = PacketByteBufs.create()
         buf.writeInt(functions.size)
