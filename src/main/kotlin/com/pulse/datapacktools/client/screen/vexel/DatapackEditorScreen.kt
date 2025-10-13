@@ -10,13 +10,17 @@ import xyz.meowing.vexel.components.core.Text
 import xyz.meowing.vexel.core.VexelScreen
 import xyz.meowing.vexel.elements.Button
 import xyz.meowing.vexel.elements.TextInput
+import xyz.meowing.vexel.utils.render.NVGRenderer
 
 class DatapackEditorScreen : VexelScreen() {
     lateinit var layout: Container
     lateinit var sidebar: Rectangle
     lateinit var functionsContainer: Container
     lateinit var createFunctionButton: Button
-    lateinit var functionNameField: TextInput
+
+    lateinit var modalBg: Rectangle
+    lateinit var modalWindow: Rectangle
+    lateinit var modalFunctionNameField: TextInput
 
     lateinit var codeLayout: Rectangle
     lateinit var codeEmptyText: Text
@@ -26,7 +30,16 @@ class DatapackEditorScreen : VexelScreen() {
     private var currentFunction: String? = null
 
     override fun afterInitialization() {
-        // main layout
+        createMainLayout()
+        createSidebar()
+        createModal()
+        createCodeEditor()
+
+        registerPacketHandlers()
+        loadFunctionsList()
+    }
+
+    fun createMainLayout() {
         layout = Container()
             .setPositioning(0f, Pos.ParentPixels, 0f, Pos.ParentPixels)
             .setSizing(100f, Size.ParentPerc, 100f, Size.ParentPerc)
@@ -38,44 +51,107 @@ class DatapackEditorScreen : VexelScreen() {
             .setPositioning(0f, Pos.ParentPixels, 0f, Pos.ParentPixels)
             .setSizing(20f, Size.ParentPerc, 100f, Size.ParentPerc)
             .childOf(layout)
+    }
 
+    fun createSidebar() {
+        val funcWidth = NVGRenderer.textWidth("Functions", 12F, NVGRenderer.defaultFont)
         Text("Functions")
-            .setPositioning(5f, Pos.ParentPixels, 5f, Pos.ParentPixels)
+            .setPositioning(-funcWidth, Pos.ParentCenter, 5f, Pos.ParentPixels)
             .color(0xFFFFFFFF.toInt())
             .childOf(sidebar)
+
         createFunctionButton = Button("Create Function")
             .setPositioning(5f, Pos.ParentPixels, 25f, Pos.ParentPixels)
-            .setSizing(90f, Size.ParentPerc, 25f, Size.Pixels)
-            .backgroundColor(0xFF4CAF50.toInt())
+            .setSizing(94f, Size.ParentPerc, 25f, Size.Pixels)
+            .backgroundColor(0xFF667CDE.toInt())
+            .hoverColor(0xFF5568BD.toInt())
+            .pressedColor(0xFF5063BA.toInt())
+            .borderColor(0x00000000)
             .onClick { _, _, _ ->
-                if (functionNameField.visible) {
-                    val functionName = functionNameField.value
-                    if (functionName.isNotEmpty()) {
-                        ClientPackets.sendCreateFunctionPacket(functionName)
-                        functionNameField.value = ""
-                        functionNameField.visible = false
-                    }
-                } else {
-                    functionNameField.visible = true
-                }
+                modalBg.visible = true
                 true
             }
             .childOf(sidebar)
 
-        functionNameField = TextInput("")
+        Rectangle()
             .setPositioning(5f, Pos.ParentPixels, 60f, Pos.ParentPixels)
-            .setSizing(90f, Size.ParentPerc, 20f, Size.Pixels)
-            .backgroundColor(0xFF404040.toInt())
+            .setSizing(94f, Size.ParentPerc, 2f, Size.Pixels)
+            .backgroundColor(0xFF4A4A4A.toInt())
+            .borderRadius(5F)
+            .borderThickness(5F)
+            .borderColor(0x00000000F)
             .childOf(sidebar)
-        functionNameField.visible = false
 
         functionsContainer = Container()
-            .setPositioning(5f, Pos.ParentPixels, 90f, Pos.ParentPixels)
-            .setSizing(90f, Size.ParentPerc, 100f, Size.ParentPerc)
+            .setPositioning(5f, Pos.ParentPixels, 75f, Pos.ParentPixels)
+            .setSizing(94F, Size.ParentPerc, 100f, Size.ParentPerc)
             .scrollable(true)
             .childOf(sidebar)
+    }
 
-        // code editor
+    fun createModal() {
+        modalBg = Rectangle()
+            .setPositioning(Pos.ParentPixels, Pos.ParentPixels)
+            .setSizing(Size.ParentPerc, Size.ParentPerc)
+            .backgroundColor(0x64000000)
+            .childOf(window)
+        modalBg.visible = false
+
+        modalWindow = Rectangle()
+            .setPositioning(Pos.ParentCenter, Pos.ParentCenter)
+            .setSizing(250F, Size.Pixels, 100F, Size.Pixels)
+            .backgroundColor(0x80404040.toInt())
+            .borderRadius(10F)
+            .borderThickness(1F)
+            .borderColor(0x00000000)
+            .childOf(modalBg)
+
+        val mtWidth = NVGRenderer.textWidth("Functions", 12F, NVGRenderer.defaultFont)
+        Text("Enter a name for function")
+            .setPositioning(-mtWidth, Pos.ParentCenter, 5F, Pos.ParentPixels)
+            .fontSize(16F)
+            .childOf(modalWindow)
+
+        modalFunctionNameField = TextInput("")
+            .setPositioning(5f, Pos.ParentPixels, 30f, Pos.ParentPixels)
+            .setSizing(96F, Size.ParentPerc, 25f, Size.Pixels)
+            .backgroundColor(0xFF404040.toInt())
+            .borderColor(0x00000000)
+            .childOf(modalWindow)
+
+        Button("Create")
+            .setPositioning(modalWindow.width / 2 - 120, Pos.ParentPixels, 60f, Pos.ParentPixels)
+            .setSizing(0f, Size.Auto, 25f, Size.Pixels)
+            .backgroundColor(0xFF667CDE.toInt())
+            .hoverColor(0xFF5568BD.toInt())
+            .pressedColor(0xFF5063BA.toInt())
+            .borderColor(0x00000000)
+            .onClick { _, _, _ ->
+                val functionName = modalFunctionNameField.value
+                if (functionName.isNotEmpty()) {
+                    ClientPackets.sendCreateFunctionPacket(functionName)
+                    modalFunctionNameField.value = ""
+                    modalBg.visible = false
+                }
+                true
+            }
+            .childOf(modalWindow)
+
+        Button("Cancel")
+            .setPositioning(modalWindow.width / 2 + 50, Pos.ParentPixels, 60f, Pos.ParentPixels)
+            .setSizing(0f, Size.Auto, 25f, Size.Pixels)
+            .backgroundColor(0xFFDB1D1D.toInt())
+            .hoverColor(0xFFB81D1D.toInt())
+            .pressedColor(0xFFB51B1B.toInt())
+            .borderColor(0x00000000)
+            .onClick { _, _, _ ->
+                modalBg.visible = false
+                true
+            }
+            .childOf(modalWindow)
+    }
+
+    fun createCodeEditor() {
         codeLayout = Rectangle()
             .setPositioning(-1f, Pos.AfterSibling, 0f, Pos.ParentPixels)
             .setSizing(100f, Size.ParentPerc, 100f, Size.ParentPerc)
@@ -92,9 +168,6 @@ class DatapackEditorScreen : VexelScreen() {
             .setSizing(100f, Size.ParentPerc, 100f, Size.ParentPerc)
             .childOf(codeLayout)
         codeInput.visible = false
-
-        registerPacketHandlers()
-        loadFunctionsList()
     }
 
     private fun loadFunctionsList() {
@@ -148,7 +221,10 @@ class DatapackEditorScreen : VexelScreen() {
             val button = Button(functionName)
                 .setPositioning(0f, Pos.ParentPixels, yOffset, Pos.ParentPixels)
                 .setSizing(100f, Size.ParentPerc, 25f, Size.Pixels)
-                .backgroundColor(0x00000000)
+                .backgroundColor(0xFF333333.toInt())
+                .hoverColor(0xFF292929.toInt())
+                .pressedColor(0xFF272727.toInt())
+                .borderColor(0x00000000)
                 .onClick { _, _, _ ->
                     if (!isCurrentFunction) {
                         currentFunction = functionName
@@ -171,6 +247,8 @@ class DatapackEditorScreen : VexelScreen() {
         functionButtons.forEach { button ->
             val isCurrentFunction = currentFunction == button.text
             button.backgroundColor(if (isCurrentFunction) 0xFF0066CC.toInt() else 0xFF333333.toInt())
+            button.hoverColor(if (isCurrentFunction) 0xFF0066CC.toInt() else 0xFF303030.toInt())
+            button.pressedColor(if (isCurrentFunction) 0xFF0066CC.toInt() else 0xFF272727.toInt())
         }
     }
 

@@ -26,7 +26,6 @@ class CodeEditor(
     borderRadius: Float = 0f,
     borderThickness: Float = 0f,
     padding: FloatArray = floatArrayOf(8f, 8f, 8f, 8f),
-    pressedColor: Int? = backgroundColor,
     var lineNumberTextColor: Int = 0xFF808080.toInt(),
     var lineNumberBgColor: Int = 0x80303030.toInt(),
     var commentColor: Int = 0xFF00FF00.toInt(),
@@ -74,7 +73,7 @@ class CodeEditor(
     private val hasSelection: Boolean
         get() = !(cursorLine == selectionAnchorLine && cursorCol == selectionAnchorCol)
 
-    private var scrollOffsetX = 1f
+    private var scrollOffsetX = -1f
     private var scrollOffsetY = 0f
 
     private var lastClickTime = 0L
@@ -89,11 +88,7 @@ class CodeEditor(
         borderColor,
         borderRadius,
         borderThickness,
-        padding,
-        backgroundColor,
-        pressedColor,
-        Size.ParentPerc,
-        Size.ParentPerc
+        padding
     )
         .setSizing(100f, Size.ParentPerc, 100f, Size.ParentPerc)
         .ignoreMouseEvents()
@@ -104,7 +99,6 @@ class CodeEditor(
         .setPositioning(Pos.ParentPixels, Pos.ParentPixels)
         .setSizing(Size.ParentPerc, Size.ParentPerc)
         .scrollable(true)
-        .ignoreMouseEvents()
         .ignoreFocus()
         .childOf(bg)
 
@@ -135,6 +129,11 @@ class CodeEditor(
         saveState()
 
         loadFile()
+
+        background.mouseClickListeners.add { _, _, _ -> false }
+        background.mouseReleaseListeners.add { _, _, _ -> false }
+        background.mouseEnterListeners.add { _, _ -> false }
+        background.mouseExitListeners.add { _, _ -> false }
 
         onClick { mouseX, mouseY, button ->
             if (button != 0) return@onClick false
