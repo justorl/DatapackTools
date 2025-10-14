@@ -28,7 +28,7 @@ class CodeEditor(
     padding: FloatArray = floatArrayOf(8f, 8f, 8f, 8f),
     var lineNumberTextColor: Int = 0xFF808080.toInt(),
     var lineNumberBgColor: Int = 0x80303030.toInt(),
-    var commentColor: Int = 0xFF00FF00.toInt(),
+    var commentColor: Int = 0xFF1ABA4F.toInt(),
     widthType: Size = Size.Auto,
     heightType: Size = Size.Auto
 ) : VexelElement<CodeEditor>(widthType, heightType) {
