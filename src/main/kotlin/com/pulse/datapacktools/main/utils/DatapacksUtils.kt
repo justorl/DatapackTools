@@ -1,15 +1,15 @@
 package com.pulse.datapacktools.main.utils
 
 import com.google.gson.GsonBuilder
+import com.pulse.datapacktools.main.config.ModConfig
 import java.io.File
 
 object DatapacksUtils {
-    const val DATAPACK_NAME = "converted"
     private val gson = GsonBuilder().setPrettyPrinting().create()
 
     fun createDefaultDatapack(rootDir: File) {
-        val convertedPackDir = File(rootDir, "datapacks/${DATAPACK_NAME}")
-        val functionsDir = File(convertedPackDir, "data/$DATAPACK_NAME/functions")
+        val convertedPackDir = File(rootDir, "datapacks/${ModConfig.data.defaultDatapack}")
+        val functionsDir = File(convertedPackDir, "data/${ModConfig.data.defaultDatapack}/functions")
 
         if (!convertedPackDir.exists()) {
             convertedPackDir.mkdirs()

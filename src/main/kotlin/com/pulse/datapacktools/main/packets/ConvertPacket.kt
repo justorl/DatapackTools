@@ -1,7 +1,6 @@
 package com.pulse.datapacktools.main.packets
 
 import com.pulse.datapacktools.main.config.ModConfig
-import com.pulse.datapacktools.main.utils.DatapacksUtils.DATAPACK_NAME
 import com.pulse.datapacktools.main.utils.DatapacksUtils.createDefaultDatapack
 import com.pulse.datapacktools.main.utils.ExtensionsUtil.getCommandChain
 import com.pulse.datapacktools.main.utils.ExtensionsUtil.getTargetBlock
@@ -45,7 +44,7 @@ object ConvertPacket {
         val worldDir: File = SessionUtils.worldFolderPath?.toFile() ?: return
         val commandList = mutableListOf<String>()
         createDefaultDatapack(worldDir)
-        val functionsDir = File(worldDir, "datapacks/${DATAPACK_NAME}/data/${DATAPACK_NAME}/functions")
+        val functionsDir = File(worldDir, "datapacks/${ModConfig.data.defaultDatapack}/data/${ModConfig.data.defaultDatapack}/functions")
 
         if (File(functionsDir, "${functionName}.mcfunction").exists()) {
             player.sendMessage(Text.translatable("message.datapacktools.convert.fail.already_exists").formatted(Formatting.RED))
@@ -59,7 +58,7 @@ object ConvertPacket {
             commandList.add(block.commandExecutor.command.removePrefix("/"))
 
             if (changeCommand) {
-                block.commandExecutor.command = "function $DATAPACK_NAME:$functionName"
+                block.commandExecutor.command = "function ${ModConfig.data.defaultDatapack}:$functionName"
                 block.markDirty()
             }
 
@@ -74,7 +73,7 @@ object ConvertPacket {
         }
 
         val dataManager = server.dataPackManager
-        val keyName = "file/${DATAPACK_NAME}"
+        val keyName = "file/${ModConfig.data.defaultDatapack}"
 
         if (ModConfig.data.enableAutomaticDatapackReload) {
             dataManager.enabledNames.toMutableList().remove(keyName)
@@ -82,6 +81,6 @@ object ConvertPacket {
             server.reloadResources(dataManager.enabledNames)
         }
 
-        player.sendMessage(Text.translatable("message.datapacktools.convert.done", "$DATAPACK_NAME:$functionName"), false)
+        player.sendMessage(Text.translatable("message.datapacktools.convert.done", "${ModConfig.data.defaultDatapack}:$functionName"), false)
     }
 }

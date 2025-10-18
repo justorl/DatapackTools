@@ -1,5 +1,6 @@
 package com.pulse.datapacktools.main.config
 
 class ConfigData {
-    val enableAutomaticDatapackReload = true
+    var enableAutomaticDatapackReload = true
+    var defaultDatapack = "datapacktools"
 }

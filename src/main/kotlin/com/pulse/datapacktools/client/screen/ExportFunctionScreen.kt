@@ -44,14 +44,14 @@ class ExportFunctionScreen() : Screen(Text.translatable("gui.datapacktools.expor
         exportButton = ButtonWidget.builder(Text.translatable("gui.datapacktools.export.export_button")) {
             val functionName = functionNameField.text
             if (functionName.isNotBlank()) {
-                client?.setScreen(null)
+                close()
                 ClientPackets.sendConvertPacket(functionNameField.text, changeCommandCheckBox.isChecked)
             }
         }.dimensions(width / 2 - 100, height / 2 + 50, 95, 20).build()
         exportButton.active = false
 
         cancelButton = ButtonWidget.builder(Text.translatable("gui.datapacktools.export.cancel")) {
-            client?.setScreen(null)
+            close()
         }.dimensions(width / 2 + 5, height / 2 + 50, 95, 20).build()
 
         addDrawableChild(functionNameField)

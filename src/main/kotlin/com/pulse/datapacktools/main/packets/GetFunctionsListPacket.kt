@@ -1,7 +1,7 @@
 package com.pulse.datapacktools.main.packets
 
 import com.pulse.datapacktools.client.packets.ClientPackets
-import com.pulse.datapacktools.main.utils.DatapacksUtils.DATAPACK_NAME
+import com.pulse.datapacktools.main.config.ModConfig
 import com.pulse.datapacktools.main.utils.DatapacksUtils.createDefaultDatapack
 import com.pulse.datapacktools.main.utils.SessionUtils
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
@@ -27,7 +27,7 @@ object GetFunctionsListPacket {
         val worldDir: File = SessionUtils.worldFolderPath?.toFile() ?: return
 
         createDefaultDatapack(worldDir)
-        val functionsDir = File(worldDir, "datapacks/${DATAPACK_NAME}/data/${DATAPACK_NAME}/functions")
+        val functionsDir = File(worldDir, "datapacks/${ModConfig.data.defaultDatapack}/data/${ModConfig.data.defaultDatapack}/functions")
         
         if (!functionsDir.exists()) functionsDir.mkdirs()
 

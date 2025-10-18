@@ -7,5 +7,7 @@ object ServerPackets {
         SaveFunctionPacket.register()
         GetFunctionsListPacket.register()
         CreateFunctionPacket.register()
+        GetDatapacksPacket.register()
+        SetDefaultDatapackPacket.register()
     }
 }

@@ -1,7 +1,7 @@
 package com.pulse.datapacktools.main.packets
 
 import com.pulse.datapacktools.client.packets.ClientPackets
-import com.pulse.datapacktools.main.utils.DatapacksUtils.DATAPACK_NAME
+import com.pulse.datapacktools.main.config.ModConfig
 import com.pulse.datapacktools.main.utils.SessionUtils
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
@@ -27,7 +27,7 @@ object GetFunctionPacket {
     fun handle(player: ServerPlayerEntity, functionName: String) {
         val worldDir: File = SessionUtils.worldFolderPath?.toFile() ?: return
 
-        val functionsDir = File(worldDir, "datapacks/${DATAPACK_NAME}/data/${DATAPACK_NAME}/functions")
+        val functionsDir = File(worldDir, "datapacks/${ModConfig.data.defaultDatapack}/data/${ModConfig.data.defaultDatapack}/functions")
         val functionFile = File(functionsDir, "${functionName}.mcfunction")
 
         if (!functionFile.exists()) return
