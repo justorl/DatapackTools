@@ -1,5 +1,6 @@
 package com.pulse.datapacktools.main.packets
 
+import com.pulse.datapacktools.main.config.ModConfig
 import com.pulse.datapacktools.main.utils.DatapacksUtils.DATAPACK_NAME
 import com.pulse.datapacktools.main.utils.DatapacksUtils.createDefaultDatapack
 import com.pulse.datapacktools.main.utils.ExtensionsUtil.getCommandChain
@@ -68,14 +69,18 @@ object ConvertPacket {
             }
         }
 
-        File(functionsDir, "${functionName}.mcfunction").writeText(commandList.joinToString("\n"))
+        File(functionsDir, "${functionName}.mcfunction").apply {
+            writeText(commandList.joinToString("\n"))
+        }
 
         val dataManager = server.dataPackManager
         val keyName = "file/${DATAPACK_NAME}"
 
-        dataManager.enabledNames.toMutableList().remove(keyName)
-        dataManager.enabledNames.toMutableList().add(keyName)
-        server.reloadResources(dataManager.enabledNames)
+        if (ModConfig.data.enableAutomaticDatapackReload) {
+            dataManager.enabledNames.toMutableList().remove(keyName)
+            dataManager.enabledNames.toMutableList().add(keyName)
+            server.reloadResources(dataManager.enabledNames)
+        }
 
         player.sendMessage(Text.translatable("message.datapacktools.convert.done", "$DATAPACK_NAME:$functionName"), false)
     }

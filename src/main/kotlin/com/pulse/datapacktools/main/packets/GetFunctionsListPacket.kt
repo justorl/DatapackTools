@@ -31,15 +31,17 @@ object GetFunctionsListPacket {
         
         if (!functionsDir.exists()) functionsDir.mkdirs()
 
-        val functions = functionsDir.listFiles { file ->
-            file.isFile && file.extension == "mcfunction" && file.name.isNotEmpty()
-        }.map { it.nameWithoutExtension }
+        val functions = mutableListOf<String>()
+        functionsDir.walkTopDown()
+            .filter { it.isFile && it.extension == "mcfunction" }
+            .forEach { file ->
+                val rel = file.relativeTo(functionsDir).invariantSeparatorsPath
+                functions.add(rel.removeSuffix(".mcfunction"))
+            }
 
         val buf = PacketByteBufs.create()
         buf.writeInt(functions.size)
-        functions.forEach { functionName ->
-            buf.writeString(functionName)
-        }
+        functions.forEach { buf.writeString(it)  }
         ServerPlayNetworking.send(player, ClientPackets.GET_FUNCTIONS_LIST_PACKET, buf)
     }
 }

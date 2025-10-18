@@ -1,5 +1,6 @@
 package com.pulse.datapacktools.main
 
+import com.pulse.datapacktools.main.config.ModConfig
 import com.pulse.datapacktools.main.packets.ServerPackets
 import com.pulse.datapacktools.main.utils.SessionUtils
 import com.pulse.datapacktools.mixin.main.SessionAccessor
@@ -12,6 +13,7 @@ class DatapackTools : ModInitializer {
 
     override fun onInitialize() {
         ServerPackets.registerAll()
+        ModConfig.load()
 
         ServerLifecycleEvents.SERVER_STARTING.register(ServerLifecycleEvents.ServerStarting { server: MinecraftServer? ->
             val session = (server as SessionAccessor).getSession()

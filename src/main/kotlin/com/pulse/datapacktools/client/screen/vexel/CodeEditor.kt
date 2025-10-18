@@ -1,6 +1,7 @@
 package com.pulse.datapacktools.client.screen.vexel
 
 import com.pulse.datapacktools.client.packets.ClientPackets
+import net.minecraft.client.MinecraftClient
 import org.lwjgl.glfw.GLFW
 import xyz.meowing.knit.api.input.KnitKeyboard
 import xyz.meowing.knit.api.input.KnitKeys
@@ -44,6 +45,12 @@ class CodeEditor(
     private val undoStack = mutableListOf<EditorState>()
     private val redoStack = mutableListOf<EditorState>()
     private val maxHistorySize = 100
+
+    private val commandSuggester = CommandSuggester(
+        mc = MinecraftClient.getInstance(),
+        maxSuggestions = 10,
+        fontSize = fontSize
+    ).childOf(this)
 
     var value = initialValue
         set(newVal) {
@@ -135,6 +142,21 @@ class CodeEditor(
         background.mouseEnterListeners.add { _, _ -> false }
         background.mouseExitListeners.add { _, _ -> false }
 
+        commandSuggester.apply {
+            getCurrentText = { lines[cursorLine] }
+            getCursorPosition = { cursorCol }
+            onSuggestionApplied = { suggestion ->
+                saveState()
+                lines[cursorLine] = suggestion
+                cursorCol = suggestion.length
+                selectionAnchorLine = cursorLine
+                selectionAnchorCol = cursorCol
+                updateValue()
+                syncComponents()
+                resetCaretBlink()
+            }
+        }
+
         onClick { mouseX, mouseY, button ->
             if (button != 0) return@onClick false
 
@@ -156,7 +178,7 @@ class CodeEditor(
 
                 lastClickTime = currentTime
 
-                when (clickCount) {
+				when (clickCount) {
                     1 -> {
                         cursorLine = clickedLine
                         cursorCol = clickedCol
@@ -175,9 +197,11 @@ class CodeEditor(
                 }
 
                 resetCaretBlink()
+				commandSuggester.refresh(lines[cursorLine], cursorCol)
                 return@onClick true
             } else {
                 isFocused = false
+                commandSuggester.hideCmp()
                 isDragging = false
                 return@onClick false
             }
@@ -218,6 +242,7 @@ class CodeEditor(
         value = lines.joinToString("\n")
         syncComponents()
         resetCaretBlink()
+        commandSuggester.refresh(lines[cursorLine], cursorCol)
     }
 
     private fun undo() {
@@ -247,7 +272,6 @@ class CodeEditor(
     }
 
     private fun syncComponents() {
-
         lineNumberTexts.keys.filter { it !in lines.indices }.forEach {
             lineNumberTexts[it]?.destroy()
             lineNumberTexts.remove(it)
@@ -359,6 +383,14 @@ class CodeEditor(
             caret.visible = false
         }
 
+        if (focused && commandSuggester.visible) {
+            val suggesterX = lineNumberWidth - scrollOffsetX +
+                    NVGRenderer.textWidth(lines[cursorLine].substring(0, cursorCol), fontSize, NVGRenderer.defaultFont)
+            val suggesterY = (cursorLine * lineHeight) - scrollOffsetY + lineHeight
+
+            commandSuggester.position(suggesterX, suggesterY)
+        }
+
         ensureCaretVisible()
     }
 
@@ -409,7 +441,11 @@ class CodeEditor(
         val ctrlDown = KnitKeyboard.isCtrlKeyPressed
         val shiftDown = KnitKeyboard.isShiftKeyPressed
 
-        when (keyCode) {
+        if (commandSuggester.visible && commandSuggester.handleKey(keyCode, scanCode, 0)) {
+            return true
+        }
+
+            when (keyCode) {
             KnitKeys.KEY_ESCAPE.code -> {
                 isFocused = false
                 return true
@@ -417,45 +453,54 @@ class CodeEditor(
             KnitKeys.KEY_ENTER.code -> {
                 saveState()
                 insertText("\n")
+                    commandSuggester.refresh(lines[cursorLine], cursorCol)
                 return true
             }
             KnitKeys.KEY_TAB.code -> {
                 saveState()
                 insertText("    ")
+                    commandSuggester.refresh(lines[cursorLine], cursorCol)
                 return true
             }
             KnitKeys.KEY_BACKSPACE.code -> {
                 saveState()
                 if (ctrlDown) deletePrevWord()
                 else deleteChar()
+                    commandSuggester.refresh(lines[cursorLine], cursorCol)
                 return true
             }
             KnitKeys.KEY_LEFT.code -> {
                 if (ctrlDown) moveWord(-1, shiftDown)
                 else moveCaret(-1, 0, shiftDown)
+                    commandSuggester.refresh(lines[cursorLine], cursorCol)
                 return true
             }
             KnitKeys.KEY_RIGHT.code -> {
                 if (ctrlDown) moveWord(1, shiftDown)
                 else moveCaret(1, 0, shiftDown)
+                    commandSuggester.refresh(lines[cursorLine], cursorCol)
                 return true
             }
             KnitKeys.KEY_UP.code -> {
                 moveCaret(0, -1, shiftDown)
+                    commandSuggester.refresh(lines[cursorLine], cursorCol)
                 return true
             }
             KnitKeys.KEY_DOWN.code -> {
                 moveCaret(0, 1, shiftDown)
+                    commandSuggester.refresh(lines[cursorLine], cursorCol)
                 return true
             }
             KnitKeys.KEY_HOME.code -> {
                 if (ctrlDown) moveCaretTo(0, 0, shiftDown)
                 else moveCaretTo(cursorLine, 0, shiftDown)
+                    commandSuggester.refresh(lines[cursorLine], cursorCol)
                 return true
             }
             KnitKeys.KEY_END.code -> {
                 if (ctrlDown) moveCaretTo(lines.size - 1, lines.last().length, shiftDown)
                 else moveCaretTo(cursorLine, lines[cursorLine].length, shiftDown)
+                    commandSuggester.refresh(lines[cursorLine], cursorCol)
                 return true
             }
         }
@@ -503,6 +548,7 @@ class CodeEditor(
         if (char.code >= 32) {
             saveState()
             insertText(char.toString())
+            commandSuggester.refresh(lines[cursorLine], cursorCol)
             return true
         }
 
@@ -513,6 +559,7 @@ class CodeEditor(
         if (!isFocused || chr.code < 32 || chr == 127.toChar()) return false
         saveState()
         insertText(chr.toString())
+        commandSuggester.refresh(lines[cursorLine], cursorCol)
         return true
     }
 
@@ -673,6 +720,8 @@ class CodeEditor(
             selectionAnchorCol = cursorCol
         }
         resetCaretBlink()
+        
+        commandSuggester.refresh(lines[cursorLine], cursorCol)
     }
 
     private fun moveCaretTo(line: Int, col: Int, shiftHeld: Boolean) {
@@ -684,6 +733,8 @@ class CodeEditor(
             selectionAnchorCol = cursorCol
         }
         resetCaretBlink()
+
+        commandSuggester.refresh(lines[cursorLine], cursorCol)
     }
 
     private fun moveWord(direction: Int, shiftHeld: Boolean) {
@@ -696,6 +747,8 @@ class CodeEditor(
             selectionAnchorCol = cursorCol
         }
         resetCaretBlink()
+
+        commandSuggester.refresh(lines[cursorLine], cursorCol)
     }
 
     private fun findWordBoundary(line: Int, col: Int, direction: Int): Pair<Int, Int> {
@@ -735,6 +788,8 @@ class CodeEditor(
         cursorCol = boundary.second
 
         deleteSelection()
+
+        commandSuggester.refresh(lines[cursorLine], cursorCol)
     }
 
     private fun deleteNextWord() {
@@ -753,6 +808,8 @@ class CodeEditor(
         cursorCol = boundary.second
 
         deleteSelection()
+
+        commandSuggester.refresh(lines[cursorLine], cursorCol)
     }
 
     private fun selectAll() {

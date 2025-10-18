@@ -1,5 +1,6 @@
 package com.pulse.datapacktools.main.packets
 
+import com.pulse.datapacktools.main.config.ModConfig
 import com.pulse.datapacktools.main.utils.DatapacksUtils.DATAPACK_NAME
 import com.pulse.datapacktools.main.utils.DatapacksUtils.createDefaultDatapack
 import com.pulse.datapacktools.main.utils.SessionUtils
@@ -30,15 +31,16 @@ object SaveFunctionPacket {
         createDefaultDatapack(worldDir)
         val functionsDir = File(worldDir, "datapacks/${DATAPACK_NAME}/data/${DATAPACK_NAME}/functions")
         val functionFile = File(functionsDir, "${functionName}.mcfunction")
-
         functionFile.writeText(content)
 
         val server = player.server
         val dataManager = server.dataPackManager
         val keyName = "file/${DATAPACK_NAME}"
 
-        dataManager.enabledNames.toMutableList().remove(keyName)
-        dataManager.enabledNames.toMutableList().add(keyName)
-        server.reloadResources(dataManager.enabledNames)
+        if (ModConfig.data.enableAutomaticDatapackReload) {
+            dataManager.enabledNames.toMutableList().remove(keyName)
+            dataManager.enabledNames.toMutableList().add(keyName)
+            server.reloadResources(dataManager.enabledNames)
+        }
     }
 }

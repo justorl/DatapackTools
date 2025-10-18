@@ -27,7 +27,19 @@ class DatapackEditorScreen : VexelScreen() {
     lateinit var codeInput: CodeEditor
 
     private val functionButtons = mutableListOf<Button>()
+    private val functionButtonPath = mutableMapOf<Button, String>()
+    private val folderButtons = mutableListOf<Button>()
     private var currentFunction: String? = null
+
+    private val expandedFolders = mutableSetOf<String>()
+    private var allFunctions: List<String> = emptyList()
+
+    data class TreeNode(
+        val name: String,
+        val fullPath: String,
+        val isFolder: Boolean,
+        val children: MutableList<TreeNode> = mutableListOf()
+    )
 
     override fun afterInitialization() {
         createMainLayout()
@@ -54,12 +66,6 @@ class DatapackEditorScreen : VexelScreen() {
     }
 
     fun createSidebar() {
-        val funcWidth = NVGRenderer.textWidth("Functions", 12F, NVGRenderer.defaultFont)
-        Text("Functions")
-            .setPositioning(-funcWidth, Pos.ParentCenter, 5f, Pos.ParentPixels)
-            .color(0xFFFFFFFF.toInt())
-            .childOf(sidebar)
-
         createFunctionButton = Button("Create Function")
             .setPositioning(5f, Pos.ParentPixels, 25f, Pos.ParentPixels)
             .setSizing(94f, Size.ParentPerc, 25f, Size.Pixels)
@@ -210,42 +216,120 @@ class DatapackEditorScreen : VexelScreen() {
     }
 
     private fun updateFunctionsList(functions: List<String>) {
-        val buttonsToDestroy = functionButtons.toList()
-        buttonsToDestroy.forEach { it.destroy() }
+        allFunctions = functions
+        renderFunctionTree()
+    }
+
+    private fun renderFunctionTree() {
+        (functionButtons + folderButtons).forEach { it.destroy() }
         functionButtons.clear()
+        folderButtons.clear()
+        functionButtonPath.clear()
 
-        var yOffset = 0f
-        functions.filter { it.isNotEmpty() }.forEach { functionName ->
-            val isCurrentFunction = currentFunction == functionName
+        val tree = buildFunctionTree(allFunctions)
+        renderTree(tree, 0, 0f)
+    }
 
-            val button = Button(functionName)
-                .setPositioning(0f, Pos.ParentPixels, yOffset, Pos.ParentPixels)
-                .setSizing(100f, Size.ParentPerc, 25f, Size.Pixels)
-                .backgroundColor(0xFF333333.toInt())
-                .hoverColor(0xFF292929.toInt())
-                .pressedColor(0xFF272727.toInt())
-                .borderColor(0x00000000)
-                .onClick { _, _, _ ->
-                    if (!isCurrentFunction) {
-                        currentFunction = functionName
-                        codeInput.filePath = functionName
-                        codeInput.loadFile()
-                        codeInput.visible = true
-                        codeEmptyText.visible = false
-                        updateButtonColors()
-                    }
-                    true
+    private fun buildFunctionTree(functions: List<String>): TreeNode {
+        val root = TreeNode("", "", true)
+
+        fun addPath(path: String) {
+            if (path.isEmpty()) return
+
+            val nsSplit = path.split(":", limit = 2)
+            val segments = mutableListOf<String>()
+            if (nsSplit.size == 2) {
+                segments.add(nsSplit[0])
+                segments.addAll(nsSplit[1].split('/').filter { it.isNotEmpty() })
+            } else {
+                segments.addAll(path.split('/').filter { it.isNotEmpty() })
+            }
+
+            var current = root
+            var built = ""
+            for ((index, segment) in segments.withIndex()) {
+                built = if (built.isEmpty()) segment else "$built/$segment"
+                val isLast = index == segments.lastIndex
+                val existing = current.children.firstOrNull { it.name == segment && it.isFolder == !isLast }
+                if (existing != null) {
+                    current = existing
+                } else {
+                    val node = TreeNode(segment, if (isLast) path else built, !isLast)
+                    current.children.add(node)
+                    current = node
                 }
-                .childOf(functionsContainer)
-
-            functionButtons.add(button)
-            yOffset += 30f
+            }
         }
+
+        functions.filter { it.isNotEmpty() }.forEach { addPath(it) }
+
+        fun sortNode(node: TreeNode) {
+            node.children.sortWith(compareBy<TreeNode> { !it.isFolder }.thenBy { it.name.lowercase() })
+            node.children.forEach { sortNode(it) }
+        }
+        sortNode(root)
+        return root
+    }
+
+    private fun renderTree(node: TreeNode, depth: Int, startYOffset: Float): Float {
+        var yOffset = startYOffset
+        for (child in node.children) {
+            if (child.isFolder) {
+                val isExpanded = expandedFolders.contains(child.fullPath)
+                val label = (if (isExpanded) "- " else "+ ") + child.name
+                val btn = Button(label)
+                    .setPositioning(depth * 12f, Pos.ParentPixels, yOffset, Pos.ParentPixels)
+                    .setSizing(100f - depth * 12f, Size.ParentPerc, 25f, Size.Pixels)
+                    .backgroundColor(0xFF000000.toInt())
+                    .hoverColor(0xFF303030.toInt())
+                    .pressedColor(0xFF272727.toInt())
+                    .borderColor(0x00000000)
+                    .onClick { _, _, _ ->
+                        if (isExpanded) expandedFolders.remove(child.fullPath) else expandedFolders.add(child.fullPath)
+                        renderFunctionTree()
+                        true
+                    }
+                    .childOf(functionsContainer)
+                folderButtons.add(btn)
+                yOffset += 30f
+                if (isExpanded) {
+                    yOffset = renderTree(child, depth + 1, yOffset)
+                }
+            } else {
+                val functionName = child.fullPath
+                val isCurrentFunction = currentFunction == functionName
+                val btn = Button(child.name)
+                    .setPositioning(depth * 12f, Pos.ParentPixels, yOffset, Pos.ParentPixels)
+                    .setSizing(100f - depth * 12f, Size.ParentPerc, 25f, Size.Pixels)
+                    .backgroundColor(0xFF333333.toInt())
+                    .hoverColor(0xFF303030.toInt())
+                    .pressedColor(0xFF272727.toInt())
+                    .borderColor(0x00000000)
+                    .onClick { _, _, _ ->
+                        if (!isCurrentFunction) {
+                            currentFunction = functionName
+                            codeInput.filePath = functionName
+                            codeInput.loadFile()
+                            codeInput.visible = true
+                            codeEmptyText.visible = false
+                            updateButtonColors()
+                        }
+                        true
+                    }
+                    .childOf(functionsContainer)
+                functionButtons.add(btn)
+                functionButtonPath[btn] = functionName
+                updateButtonColors()
+                yOffset += 30f
+            }
+        }
+        return yOffset
     }
 
     private fun updateButtonColors() {
         functionButtons.forEach { button ->
-            val isCurrentFunction = currentFunction == button.text
+            val path = functionButtonPath[button]
+            val isCurrentFunction = currentFunction == path
             button.backgroundColor(if (isCurrentFunction) 0xFF0066CC.toInt() else 0xFF333333.toInt())
             button.hoverColor(if (isCurrentFunction) 0xFF0066CC.toInt() else 0xFF303030.toInt())
             button.pressedColor(if (isCurrentFunction) 0xFF0066CC.toInt() else 0xFF272727.toInt())
