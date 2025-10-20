@@ -8,6 +8,7 @@ object ServerPackets {
         GetFunctionsListPacket.register()
         CreateFunctionPacket.register()
         GetDatapacksPacket.register()
-        SetDefaultDatapackPacket.register()
+        SetDatapackPacket.register()
+        GetNamespacesPacket.register()
     }
 }

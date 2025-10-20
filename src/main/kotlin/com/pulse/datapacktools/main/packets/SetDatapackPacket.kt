@@ -6,25 +6,27 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
-object SetDefaultDatapackPacket {
-    val ID = Identifier("datapacktools", "set_default_datapack")
+object SetDatapackPacket {
+    val ID = Identifier("datapacktools", "set_datapack")
 
     fun register() {
         ServerPlayNetworking.registerGlobalReceiver(ID) { server, player, handler, buf, responseSender ->
             val datapackName = buf.readString()
+            val namespaceName = buf.readString()
 
             if (player.hasPermissionLevel(4)) {
                 server.execute {
-                    handle(player, datapackName)
+                    handle(player, datapackName, namespaceName)
                 }
             }
         }
     }
 
-    fun handle(player: ServerPlayerEntity, datapackName: String) {
-        ModConfig.data.defaultDatapack = datapackName
+    fun handle(player: ServerPlayerEntity, datapackName: String, namespaceName: String) {
+        ModConfig.data.datapackName = datapackName
+        ModConfig.data.datapackNamespace = namespaceName
         ModConfig.save()
 
-        player.sendMessage(Text.translatable("message.datapacktools.set_default_datapack.done", datapackName))
+        player.sendMessage(Text.translatable("message.datapacktools.set_datapack.done", datapackName, namespaceName))
     }
 }

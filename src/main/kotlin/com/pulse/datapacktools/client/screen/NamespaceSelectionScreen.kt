@@ -8,37 +8,37 @@ import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.text.Text
 import net.minecraft.util.Colors
 
-class DatapackSelectionScreen : Screen(Text.translatable("gui.datapacktools.datapack_selection.screen_title")) {
+class NamespaceSelectionScreen(val datapackName: String) : Screen(Text.translatable("gui.datapacktools.namespace_selection.screen_title")) {
 
-    private val maxDatapacks = 15
-    private val datapackButtons: MutableList<ButtonWidget> = mutableListOf()
+    private val maxNamespaces = 15
+    private val namespaceButtons: MutableList<ButtonWidget> = mutableListOf()
     private lateinit var cancelButton: ButtonWidget
 
-    private var availableDatapacks = listOf<String>()
+    private var availableNamespaces = listOf<String>()
 
     override fun init() {
         super.init()
 
-        repeat(maxDatapacks) { i ->
+        repeat(maxNamespaces) { i ->
             val btn = ButtonWidget.builder(Text.literal("")) {
-                val name = availableDatapacks.getOrNull(i)
+                val name = availableNamespaces.getOrNull(i)
                 if (!name.isNullOrBlank()) {
+                    ClientPackets.sendSetDatapackPacket(datapackName, name)
                     close()
-                    client?.setScreen(NamespaceSelectionScreen(name))
                 }
             }.dimensions(width / 2 - 100, height / 2 - 40 + i * 22, 200, 20).build()
             btn.visible = false
-            datapackButtons.add(btn)
+            namespaceButtons.add(btn)
             addDrawableChild(btn)
         }
 
-        cancelButton = ButtonWidget.builder(Text.translatable("gui.datapacktools.datapack_selection.cancel")) {
+        cancelButton = ButtonWidget.builder(Text.translatable("gui.datapacktools.namespace_selection.cancel")) {
             close()
-        }.dimensions(width / 2 + 5, height / 2 - 40 + maxDatapacks * 22, 95, 20).build()
+        }.dimensions(width / 2 + 5, height / 2 - 40 + maxNamespaces * 22, 95, 20).build()
         addDrawableChild(cancelButton)
 
         registerPacketHandlers()
-        ClientPackets.sendGetDatapacksPacket()
+        ClientPackets.sendGetNamespacesPacket(datapackName)
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
@@ -46,7 +46,7 @@ class DatapackSelectionScreen : Screen(Text.translatable("gui.datapacktools.data
 
         context.drawCenteredTextWithShadow(
             textRenderer,
-            Text.translatable("gui.datapacktools.datapack_selection.screen_title"),
+            Text.translatable("gui.datapacktools.namespace_selection.screen_title"),
             width / 2,
             height / 2 - 80,
             Colors.WHITE
@@ -54,16 +54,16 @@ class DatapackSelectionScreen : Screen(Text.translatable("gui.datapacktools.data
 
         context.drawCenteredTextWithShadow(
             textRenderer,
-            Text.translatable("gui.datapacktools.datapack_selection.subtitle"),
+            Text.translatable("gui.datapacktools.namespace_selection.subtitle", datapackName),
             width / 2,
             height / 2 - 60,
             Colors.GRAY
         )
 
-        if (availableDatapacks.isEmpty()) {
+        if (availableNamespaces.isEmpty()) {
             context.drawCenteredTextWithShadow(
                 textRenderer,
-                Text.translatable("gui.datapacktools.datapack_selection.empty"),
+                Text.translatable("gui.datapacktools.namespace_selection.empty"),
                 width / 2,
                 height / 2 - 10,
                 Colors.GRAY
@@ -74,28 +74,28 @@ class DatapackSelectionScreen : Screen(Text.translatable("gui.datapacktools.data
     }
 
     override fun close() {
-        ClientPlayNetworking.unregisterGlobalReceiver(ClientPackets.GET_DATAPACKS_PACKET)
+        ClientPlayNetworking.unregisterGlobalReceiver(ClientPackets.GET_NAMESPACES_PACKET)
         super.close()
     }
 
     private fun registerPacketHandlers() {
-        ClientPlayNetworking.registerGlobalReceiver(ClientPackets.GET_DATAPACKS_PACKET) { client, handler, buf, responseSender ->
-            val datapacksCount = buf.readInt()
-            val datapacks = mutableListOf<String>()
-            repeat(datapacksCount) {
-                datapacks.add(buf.readString())
+        ClientPlayNetworking.registerGlobalReceiver(ClientPackets.GET_NAMESPACES_PACKET) { client, handler, buf, responseSender ->
+            val namespacesCount = buf.readInt()
+            val namespaces = mutableListOf<String>()
+            repeat(namespacesCount) {
+                namespaces.add(buf.readString())
             }
 
             client.execute {
-                availableDatapacks = datapacks
-                updateDatapackButtons()
+                availableNamespaces = namespaces
+                updateNamespaceButtons()
             }
         }
     }
 
-    private fun updateDatapackButtons() {
-        datapackButtons.forEachIndexed { i, btn ->
-            val name = availableDatapacks.getOrNull(i)
+    private fun updateNamespaceButtons() {
+        namespaceButtons.forEachIndexed { i, btn ->
+            val name = availableNamespaces.getOrNull(i)
             if (!name.isNullOrBlank()) {
                 btn.visible = true
                 btn.message = Text.literal(name)

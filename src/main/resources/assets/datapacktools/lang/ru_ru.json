@@ -1,12 +1,11 @@
 {
   "category.datapacktools": "Инструменты для датапаков",
-  "gui.datapacktools.datapack_selection.available_datapacks": "Доступные датапаки:",
-  "gui.datapacktools.datapack_selection.cancel": "Отмена",
-  "gui.datapacktools.datapack_selection.enter_name": "Введите имя датапака",
-  "gui.datapacktools.datapack_selection.no_datapacks": "Датапаки были не найдены",
-  "gui.datapacktools.datapack_selection.screen_title": "Установить дефолтный датапак",
-  "gui.datapacktools.datapack_selection.select": "Выбрать",
-  "gui.datapacktools.datapack_selection.subtitle": "Выберите датапак, который вы будете изменять",
+  "gui.datapacktools.datapack_selection.screen_title": "Установить редактируемый датапак",
+  "gui.datapacktools.datapack_selection.subtitle": "Выберите датапак, который вы будете изменять позже",
+  "gui.datapacktools.datapack_selection.empty": "Датапаки были не найдены",
+  "gui.datapacktools.namespace_selection.screen_title": "Установить дефолтный датапак",
+  "gui.datapacktools.namespace_selection.subtitle": "Выберите неймспейс датапака %s",
+  "gui.datapacktools.namespace_selection.empty": "Неймспейсы не найдены",
   "gui.datapacktools.export.cancel": "Отмена",
   "gui.datapacktools.export.enter_name": "Введите имя функции:",
   "gui.datapacktools.export.export_button": "Экспорт",
@@ -20,5 +19,5 @@
   "message.datapacktools.convert.done": "Конвертировано! Создана функция %s",
   "message.datapacktools.convert.fail.already_exists": "Ошибка: Функция с таким именем уже существует",
   "message.datapacktools.convert.start": "Конвертация...",
-  "message.datapacktools.set_default_datapack.done": "Успешно установлен дефолтный датапак на %s"
+  "message.datapacktools.set_datapack.done": "Успешно выбран датапак %s:%s"
 }

@@ -27,7 +27,7 @@ object GetFunctionPacket {
     fun handle(player: ServerPlayerEntity, functionName: String) {
         val worldDir: File = SessionUtils.worldFolderPath?.toFile() ?: return
 
-        val functionsDir = File(worldDir, "datapacks/${ModConfig.data.defaultDatapack}/data/${ModConfig.data.defaultDatapack}/functions")
+        val functionsDir = File(worldDir, "datapacks/${ModConfig.data.datapackName}/data/${ModConfig.data.datapackNamespace}/functions")
         val functionFile = File(functionsDir, "${functionName}.mcfunction")
 
         if (!functionFile.exists()) return

@@ -12,7 +12,8 @@ object ClientPackets {
     val CREATE_FUNCTION_PACKET = Identifier("datapacktools", "create_function")
     val FUNCTION_CREATED_PACKET = Identifier("datapacktools", "function_created")
     val GET_DATAPACKS_PACKET = Identifier("datapacktools", "get_datapacks")
-    val SET_DEFAULT_DATAPACK = Identifier("datapacktools", "set_default_datapack")
+    val GET_NAMESPACES_PACKET = Identifier("datapacktools", "get_namespaces")
+    val SET_DATAPACK = Identifier("datapacktools", "set_datapack")
 
     fun sendConvertPacket(functionName: String, changeCommand: Boolean) {
         val buf = PacketByteBufs.create()
@@ -50,9 +51,16 @@ object ClientPackets {
         ClientPlayNetworking.send(GET_DATAPACKS_PACKET, buf)
     }
 
-    fun sendSetDefaultDatapackPacket(datapackName: String) {
+    fun sendGetNamespacesPacket(datapackName: String) {
         val buf = PacketByteBufs.create()
         buf.writeString(datapackName)
-        ClientPlayNetworking.send(SET_DEFAULT_DATAPACK, buf)
+        ClientPlayNetworking.send(GET_NAMESPACES_PACKET, buf)
+    }
+
+    fun sendSetDatapackPacket(datapackName: String, namespaceName: String) {
+        val buf = PacketByteBufs.create()
+        buf.writeString(datapackName)
+        buf.writeString(namespaceName)
+        ClientPlayNetworking.send(SET_DATAPACK, buf)
     }
 }

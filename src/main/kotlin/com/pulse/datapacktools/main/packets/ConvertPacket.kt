@@ -2,6 +2,7 @@ package com.pulse.datapacktools.main.packets
 
 import com.pulse.datapacktools.main.config.ModConfig
 import com.pulse.datapacktools.main.utils.DatapacksUtils.createDefaultDatapack
+import com.pulse.datapacktools.main.utils.DatapacksUtils.updateDatapack
 import com.pulse.datapacktools.main.utils.ExtensionsUtil.getCommandChain
 import com.pulse.datapacktools.main.utils.ExtensionsUtil.getTargetBlock
 import com.pulse.datapacktools.main.utils.SessionUtils
@@ -40,11 +41,10 @@ object ConvertPacket {
     ) {
         player.sendMessage(Text.translatable("message.datapacktools.convert.start").formatted(Formatting.GRAY, Formatting.ITALIC))
 
-        val server = player.server
         val worldDir: File = SessionUtils.worldFolderPath?.toFile() ?: return
         val commandList = mutableListOf<String>()
         createDefaultDatapack(worldDir)
-        val functionsDir = File(worldDir, "datapacks/${ModConfig.data.defaultDatapack}/data/${ModConfig.data.defaultDatapack}/functions")
+        val functionsDir = File(worldDir, "datapacks/${ModConfig.data.datapackName}/data/${ModConfig.data.datapackNamespace}/functions")
 
         if (File(functionsDir, "${functionName}.mcfunction").exists()) {
             player.sendMessage(Text.translatable("message.datapacktools.convert.fail.already_exists").formatted(Formatting.RED))
@@ -58,7 +58,7 @@ object ConvertPacket {
             commandList.add(block.commandExecutor.command.removePrefix("/"))
 
             if (changeCommand) {
-                block.commandExecutor.command = "function ${ModConfig.data.defaultDatapack}:$functionName"
+                block.commandExecutor.command = "function ${ModConfig.data.datapackName}:$functionName"
                 block.markDirty()
             }
 
@@ -72,15 +72,8 @@ object ConvertPacket {
             writeText(commandList.joinToString("\n"))
         }
 
-        val dataManager = server.dataPackManager
-        val keyName = "file/${ModConfig.data.defaultDatapack}"
+        updateDatapack(player)
 
-        if (ModConfig.data.enableAutomaticDatapackReload) {
-            dataManager.enabledNames.toMutableList().remove(keyName)
-            dataManager.enabledNames.toMutableList().add(keyName)
-            server.reloadResources(dataManager.enabledNames)
-        }
-
-        player.sendMessage(Text.translatable("message.datapacktools.convert.done", "${ModConfig.data.defaultDatapack}:$functionName"), false)
+        player.sendMessage(Text.translatable("message.datapacktools.convert.done", "${ModConfig.data.datapackName}:$functionName"), false)
     }
 }

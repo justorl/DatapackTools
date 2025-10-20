@@ -1,12 +1,11 @@
 {
   "category.datapacktools": "Datapack Tools",
-  "gui.datapacktools.datapack_selection.available_datapacks": "Available datapacks:",
-  "gui.datapacktools.datapack_selection.cancel": "Cancel",
-  "gui.datapacktools.datapack_selection.enter_name": "Enter datapack name",
-  "gui.datapacktools.datapack_selection.no_datapacks": "No datapacks were found",
-  "gui.datapacktools.datapack_selection.screen_title": "Select default datapack",
-  "gui.datapacktools.datapack_selection.select": "Select",
-  "gui.datapacktools.datapack_selection.subtitle": "Select datapack for editing",
+  "gui.datapacktools.datapack_selection.screen_title": "Select datapack for editing",
+  "gui.datapacktools.datapack_selection.subtitle": "Select datapack, that you will edit later",
+  "gui.datapacktools.datapack_selection.empty": "Datapacks were not found",
+  "gui.datapacktools.namespace_selection.screen_title": "Select datapack for editing",
+  "gui.datapacktools.namespace_selection.subtitle": "Choose namespace of datapack %s",
+  "gui.datapacktools.namespace_selection.empty": "Namespaces were not found",
   "gui.datapacktools.export.cancel": "Cancel",
   "gui.datapacktools.export.enter_name": "Enter a name for the function:",
   "gui.datapacktools.export.export_button": "Export",
@@ -20,5 +19,5 @@
   "message.datapacktools.convert.done": "Converted! Created function %s",
   "message.datapacktools.convert.fail.already_exists": "Error: Function with that name already exists",
   "message.datapacktools.convert.start": "Converting...",
-  "message.datapacktools.set_default_datapack.done": "Successfully set default datapack to %s"
+  "message.datapacktools.set_datapack.done": "Successfully selected datapack %s:%s"
 }
