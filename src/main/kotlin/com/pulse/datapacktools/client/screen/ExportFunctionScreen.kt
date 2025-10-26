@@ -11,6 +11,10 @@ import net.minecraft.text.Text
 import net.minecraft.util.Colors
 
 class ExportFunctionScreen() : Screen(Text.translatable("gui.datapacktools.export.screen_title")) {
+    companion object {
+        var lastFunctionName: String = ""
+    }
+
     private lateinit var functionNameField: TextFieldWidget
     private lateinit var exportButton: ButtonWidget
     private lateinit var cancelButton: ButtonWidget
@@ -28,6 +32,7 @@ class ExportFunctionScreen() : Screen(Text.translatable("gui.datapacktools.expor
             Text.of("Function Name")
         )
         functionNameField.setMaxLength(16)
+        functionNameField.text = lastFunctionName
 
         changeCommandCheckBox = CheckboxWidget(
             width / 2 - 100,
@@ -87,5 +92,10 @@ class ExportFunctionScreen() : Screen(Text.translatable("gui.datapacktools.expor
         super.tick()
         functionNameField.tick()
         exportButton.active = functionNameField.text.isNotBlank()
+    }
+
+    override fun close() {
+        lastFunctionName = functionNameField.text
+        super.close()
     }
 }

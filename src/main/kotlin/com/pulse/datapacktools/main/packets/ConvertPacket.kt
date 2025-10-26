@@ -44,11 +44,18 @@ object ConvertPacket {
         val worldDir: File = SessionUtils.worldFolderPath?.toFile() ?: return
         val commandList = mutableListOf<String>()
         createDefaultDatapack(worldDir)
-        val functionsDir = File(worldDir, "datapacks/${ModConfig.data.datapackName}/data/${ModConfig.data.datapackNamespace}/functions")
 
-        if (File(functionsDir, "${functionName}.mcfunction").exists()) {
-            player.sendMessage(Text.translatable("message.datapacktools.convert.fail.already_exists").formatted(Formatting.RED))
-            return
+        val functionsDir = File(worldDir, "datapacks/${ModConfig.data.datapackName}/data/${ModConfig.data.datapackNamespace}/functions")
+        val functionDir = File(functionsDir, functionName.substringBeforeLast('/'))
+        val functionFile = File(functionsDir, "${functionName}.mcfunction")
+
+        if (functionFile.exists()) {
+            if (!ModConfig.data.enableWritingInExistingFunctions) {
+                functionFile.readLines().forEach { commandList.add(it) }
+            } else {
+                player.sendMessage(Text.translatable("message.datapacktools.convert.fail.already_exists").formatted(Formatting.RED))
+                return
+            }
         }
 
         val pos: BlockPos = player.getTargetBlock()?.blockPos ?: return
@@ -68,9 +75,8 @@ object ConvertPacket {
             }
         }
 
-        File(functionsDir, "${functionName}.mcfunction").apply {
-            writeText(commandList.joinToString("\n"))
-        }
+        if (!functionDir.exists()) functionDir.mkdirs()
+        functionFile.writeText(commandList.joinToString("\n"))
 
         updateDatapack(player)
 
