@@ -42,8 +42,9 @@ object ConvertPacket {
         player.sendMessage(Text.translatable("message.datapacktools.convert.start").formatted(Formatting.GRAY, Formatting.ITALIC))
 
         val worldDir: File = SessionUtils.worldFolderPath?.toFile() ?: return
-        val commandList = mutableListOf<String>()
         createDefaultDatapack(worldDir)
+
+        val commandList = mutableListOf<String>()
 
         val functionsDir = File(worldDir, "datapacks/${ModConfig.data.datapackName}/data/${ModConfig.data.datapackNamespace}/functions")
         val functionDir = File(functionsDir, functionName.substringBeforeLast('/'))
@@ -65,7 +66,7 @@ object ConvertPacket {
             commandList.add(block.commandExecutor.command.removePrefix("/"))
 
             if (changeCommand) {
-                block.commandExecutor.command = "function ${ModConfig.data.datapackName}:$functionName"
+                block.commandExecutor.command = "function ${ModConfig.data.datapackNamespace}:$functionName"
                 block.markDirty()
             }
 

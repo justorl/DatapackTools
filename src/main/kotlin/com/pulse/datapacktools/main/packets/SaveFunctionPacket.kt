@@ -27,9 +27,9 @@ object SaveFunctionPacket {
 
     fun handle(player: ServerPlayerEntity, functionName: String, content: String) {
         val worldDir: File = SessionUtils.worldFolderPath?.toFile() ?: return
-
         createDefaultDatapack(worldDir)
-        val functionsDir = File(worldDir, "datapacks/${ModConfig.data.datapackName}/data/${ModConfig.data.datapackName}/functions")
+
+        val functionsDir = File(worldDir, "datapacks/${ModConfig.data.datapackName}/data/${ModConfig.data.datapackNamespace}/functions")
         val functionFile = File(functionsDir, "${functionName}.mcfunction")
         functionFile.writeText(content)
 

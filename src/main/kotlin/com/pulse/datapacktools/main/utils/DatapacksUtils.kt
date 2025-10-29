@@ -22,7 +22,7 @@ object DatapacksUtils {
 
     fun createDefaultDatapack(rootDir: File) {
         val convertedPackDir = File(rootDir, "datapacks/${ModConfig.data.datapackName}")
-        val functionsDir = File(convertedPackDir, "data/${ModConfig.data.datapackName}/functions")
+        val functionsDir = File(convertedPackDir, "data/${ModConfig.data.datapackNamespace}/functions")
 
         if (!convertedPackDir.exists()) {
             convertedPackDir.mkdirs()
