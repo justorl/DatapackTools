@@ -87,6 +87,8 @@ class CodeEditor(
     private var clickCount = 0
     var isLoaded = false
     var hasUnsavedChanges = false
+    
+    var onUnsavedChanges: ((Boolean) -> Unit)? = null
 
     private val lineNumberWidth: Float = 50f
 
@@ -897,6 +899,10 @@ class CodeEditor(
         val newValue = lines.joinToString("\n")
         if (value != newValue) {
             value = newValue
+            if (isLoaded) {
+                hasUnsavedChanges = true
+                onUnsavedChanges?.invoke(true)
+            }
         }
     }
 
@@ -957,6 +963,7 @@ class CodeEditor(
         if (filePath.isNotEmpty() && isLoaded) {
             ClientPackets.sendSaveFunctionPacket(filePath, value)
             hasUnsavedChanges = false
+            onUnsavedChanges?.invoke(false)
         }
     }
 

@@ -21,7 +21,7 @@ object ConvertPacket {
 
     fun register() {
         ServerPlayNetworking.registerGlobalReceiver(ID) { server, player, handler, buf, responseSender ->
-            val functionName = buf.readString()
+            val functionName = buf.readString().removeSuffix("/")
             val changeCommand = buf.readBoolean()
 
             if (player.hasPermissionLevel(4)) {
@@ -51,7 +51,7 @@ object ConvertPacket {
         val functionFile = File(functionsDir, "${functionName}.mcfunction")
 
         if (functionFile.exists()) {
-            if (!ModConfig.data.enableWritingInExistingFunctions) {
+            if (ModConfig.data.enableWritingInExistingFunctions) {
                 functionFile.readLines().forEach { commandList.add(it) }
             } else {
                 player.sendMessage(Text.translatable("message.datapacktools.convert.fail.already_exists").formatted(Formatting.RED))
@@ -76,7 +76,7 @@ object ConvertPacket {
             }
         }
 
-        if (!functionDir.exists()) functionDir.mkdirs()
+        if (!functionDir.exists() && functionName.contains("/")) functionDir.mkdirs()
         functionFile.writeText(commandList.joinToString("\n"))
 
         updateDatapack(player)

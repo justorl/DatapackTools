@@ -28,11 +28,13 @@ class DatapackEditorScreen : VexelScreen() {
 
     private val functionButtons = mutableListOf<Button>()
     private val functionButtonPath = mutableMapOf<Button, String>()
+    private val functionButtonName = mutableMapOf<Button, String>()
     private val folderButtons = mutableListOf<Button>()
     private var currentFunction: String? = null
 
     private val expandedFolders = mutableSetOf<String>()
     private var allFunctions: List<String> = emptyList()
+    private val unsavedFunctions = mutableSetOf<String>()
 
     data class TreeNode(
         val name: String,
@@ -176,6 +178,17 @@ class DatapackEditorScreen : VexelScreen() {
             .setSizing(100f, Size.ParentPerc, 100f, Size.ParentPerc)
             .childOf(codeLayout)
         codeInput.visible = false
+        
+        codeInput.onUnsavedChanges = { unsaved ->
+            if (currentFunction != null) {
+                if (unsaved) {
+                    unsavedFunctions.add(currentFunction!!)
+                } else {
+                    unsavedFunctions.remove(currentFunction!!)
+                }
+                updateButtonTexts()
+            }
+        }
     }
 
     private fun loadFunctionsList() {
@@ -212,6 +225,7 @@ class DatapackEditorScreen : VexelScreen() {
                     codeInput.value = content
                     codeInput.isLoaded = true
                     codeInput.hasUnsavedChanges = false
+                    unsavedFunctions.remove(functionName)
                 }
             }
         }
@@ -227,6 +241,7 @@ class DatapackEditorScreen : VexelScreen() {
         functionButtons.clear()
         folderButtons.clear()
         functionButtonPath.clear()
+        functionButtonName.clear()
 
         val tree = buildFunctionTree(allFunctions)
         renderTree(tree, 0, 0f)
@@ -300,13 +315,15 @@ class DatapackEditorScreen : VexelScreen() {
             } else {
                 val functionName = child.fullPath
                 val isCurrentFunction = currentFunction == functionName
-                val btn = Button(child.name)
+                val unsaved = unsavedFunctions.contains(functionName)
+                val btn = Button(if (unsaved) "${child.name}*" else child.name)
                     .setPositioning(depth * 12f, Pos.ParentPixels, yOffset, Pos.ParentPixels)
                     .setSizing(100f - depth * 12f, Size.ParentPerc, 25f, Size.Pixels)
                     .backgroundColor(0xFF333333.toInt())
                     .hoverColor(0xFF303030.toInt())
                     .pressedColor(0xFF272727.toInt())
                     .borderColor(0x00000000)
+                    .textColor(if (!unsaved) 0xFFFFFFFF.toInt() else 0xFFB5B5B5.toInt())
                     .onClick { _, _, _ ->
                         if (!isCurrentFunction) {
                             currentFunction = functionName
@@ -321,6 +338,7 @@ class DatapackEditorScreen : VexelScreen() {
                     .childOf(functionsContainer)
                 functionButtons.add(btn)
                 functionButtonPath[btn] = functionName
+                functionButtonName[btn] = child.name
                 updateButtonColors()
                 yOffset += 30f
             }
@@ -335,6 +353,15 @@ class DatapackEditorScreen : VexelScreen() {
             button.backgroundColor(if (isCurrentFunction) 0xFF0066CC.toInt() else 0xFF333333.toInt())
             button.hoverColor(if (isCurrentFunction) 0xFF0066CC.toInt() else 0xFF303030.toInt())
             button.pressedColor(if (isCurrentFunction) 0xFF0066CC.toInt() else 0xFF272727.toInt())
+        }
+    }
+
+    private fun updateButtonTexts() {
+        functionButtons.forEach { button ->
+            val path = functionButtonPath[button]
+            val unsaved = unsavedFunctions.contains(path)
+            val rawName = functionButtonName[button] ?: return@forEach
+            button.text = if (unsaved) "$rawName*" else rawName
         }
     }
 
