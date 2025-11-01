@@ -13,6 +13,7 @@ import net.minecraft.util.Colors
 class ExportFunctionScreen() : Screen(Text.translatable("gui.datapacktools.export.screen_title")) {
     companion object {
         var lastFunctionName: String = ""
+        var lastChangeCommandCheckbox: Boolean = true
     }
 
     private lateinit var functionNameField: TextFieldWidget
@@ -40,7 +41,7 @@ class ExportFunctionScreen() : Screen(Text.translatable("gui.datapacktools.expor
             200,
             20,
             Text.translatable("gui.datapacktools.export.replace_checkmark"),
-            true
+            lastChangeCommandCheckbox
         )
         changeCommandCheckBox.tooltip = Tooltip.of(
             Text.translatable("gui.datapacktools.export.replace_checkmark.description")
@@ -90,12 +91,12 @@ class ExportFunctionScreen() : Screen(Text.translatable("gui.datapacktools.expor
 
     override fun tick() {
         super.tick()
-        functionNameField.tick()
         exportButton.active = functionNameField.text.isNotBlank()
     }
 
     override fun close() {
         lastFunctionName = functionNameField.text
+        lastChangeCommandCheckbox = changeCommandCheckBox.isChecked
         super.close()
     }
 }
