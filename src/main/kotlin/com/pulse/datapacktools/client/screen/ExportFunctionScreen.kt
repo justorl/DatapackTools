@@ -1,6 +1,7 @@
 package com.pulse.datapacktools.client.screen
 
 import com.pulse.datapacktools.client.packets.ClientPackets
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.tooltip.Tooltip
@@ -20,10 +21,11 @@ class ExportFunctionScreen() : Screen(Text.translatable("gui.datapacktools.expor
     private lateinit var exportButton: ButtonWidget
     private lateinit var cancelButton: ButtonWidget
     private lateinit var changeCommandCheckBox: CheckboxWidget
+    private lateinit var selectAnotherButton: ButtonWidget
+
+    var current = "Загрузка.."
 
     override fun init() {
-        super.init()
-
         functionNameField = TextFieldWidget(
             textRenderer,
             width / 2 - 100,
@@ -37,7 +39,7 @@ class ExportFunctionScreen() : Screen(Text.translatable("gui.datapacktools.expor
 
         changeCommandCheckBox = CheckboxWidget(
             width / 2 - 100,
-            height / 2 + 20,
+            height / 2 + 10,
             200,
             20,
             Text.translatable("gui.datapacktools.export.replace_checkmark"),
@@ -53,19 +55,29 @@ class ExportFunctionScreen() : Screen(Text.translatable("gui.datapacktools.expor
                 close()
                 ClientPackets.sendConvertPacket(functionNameField.text, changeCommandCheckBox.isChecked)
             }
-        }.dimensions(width / 2 - 100, height / 2 + 50, 95, 20).build()
+        }.dimensions(width / 2 - 100, height / 2 + 40, 95, 20).build()
         exportButton.active = false
 
         cancelButton = ButtonWidget.builder(Text.translatable("gui.datapacktools.export.cancel")) {
             close()
-        }.dimensions(width / 2 + 5, height / 2 + 50, 95, 20).build()
+        }.dimensions(width / 2 + 5, height / 2 + 40, 95, 20).build()
+
+        selectAnotherButton = ButtonWidget.builder(Text.translatable("gui.datapacktools.export.select_another_button")) {
+            lastFunctionName = functionNameField.text
+            lastChangeCommandCheckbox = changeCommandCheckBox.isChecked
+            ClientPlayNetworking.unregisterGlobalReceiver(ClientPackets.GET_CURRENT_PACKET)
+            client?.setScreen(DatapackSelectionScreen(this))
+        }.dimensions(width / 2 - 100, height / 2 + 90, 200, 20).build()
 
         addDrawableChild(functionNameField)
         addDrawableChild(changeCommandCheckBox)
         addDrawableChild(exportButton)
         addDrawableChild(cancelButton)
-    }
+        addDrawableChild(selectAnotherButton)
 
+        registerPacketHandlers()
+        ClientPackets.sendGetCurrentPacket()
+    }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         renderBackground(context)
@@ -86,6 +98,14 @@ class ExportFunctionScreen() : Screen(Text.translatable("gui.datapacktools.expor
             Colors.GRAY
         )
 
+        context.drawCenteredTextWithShadow(
+            textRenderer,
+            Text.translatable("gui.datapacktools.export.current", current),
+            width / 2,
+            height / 2 + 80,
+            Colors.GRAY
+        )
+
         super.render(context, mouseX, mouseY, delta)
     }
 
@@ -97,6 +117,13 @@ class ExportFunctionScreen() : Screen(Text.translatable("gui.datapacktools.expor
     override fun close() {
         lastFunctionName = functionNameField.text
         lastChangeCommandCheckbox = changeCommandCheckBox.isChecked
+        ClientPlayNetworking.unregisterGlobalReceiver(ClientPackets.GET_CURRENT_PACKET)
         super.close()
+    }
+
+    private fun registerPacketHandlers() {
+        ClientPlayNetworking.registerGlobalReceiver(ClientPackets.GET_CURRENT_PACKET) { client, handler, buf, responseSender ->
+            current = buf.readString()
+        }
     }
 }

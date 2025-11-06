@@ -15,6 +15,7 @@ import xyz.meowing.vexel.utils.render.NVGRenderer
 class DatapackEditorScreen : VexelScreen() {
     lateinit var layout: Container
     lateinit var sidebar: Rectangle
+
     lateinit var functionsContainer: Container
     lateinit var createFunctionButton: Button
 
@@ -24,17 +25,18 @@ class DatapackEditorScreen : VexelScreen() {
 
     lateinit var codeLayout: Rectangle
     lateinit var codeEmptyText: Text
-    lateinit var codeInput: CodeEditor
+    lateinit var codeEditor: CodeEditor
 
     private val functionButtons = mutableListOf<Button>()
     private val functionButtonPath = mutableMapOf<Button, String>()
-    private val functionButtonName = mutableMapOf<Button, String>()
-    private val folderButtons = mutableListOf<Button>()
-    private var currentFunction: String? = null
 
+    var currentFunction: String? = null
+    private var currentFunctionButton: Button? = null
+
+    private val folderButtons = mutableListOf<Button>()
     private val expandedFolders = mutableSetOf<String>()
-    private var allFunctions: List<String> = emptyList()
-    private val unsavedFunctions = mutableSetOf<String>()
+
+    var functions: List<String> = emptyList()
 
     data class TreeNode(
         val name: String,
@@ -50,7 +52,7 @@ class DatapackEditorScreen : VexelScreen() {
         createCodeEditor()
 
         registerPacketHandlers()
-        loadFunctionsList()
+        ClientPackets.sendGetFunctionsListPacket()
     }
 
     fun createMainLayout() {
@@ -59,7 +61,6 @@ class DatapackEditorScreen : VexelScreen() {
             .setSizing(100f, Size.ParentPerc, 100f, Size.ParentPerc)
             .childOf(window)
 
-        // sidebar
         sidebar = Rectangle()
             .backgroundColor(0xFF212421.toInt())
             .setPositioning(0f, Pos.ParentPixels, 0f, Pos.ParentPixels)
@@ -77,6 +78,7 @@ class DatapackEditorScreen : VexelScreen() {
             .borderColor(0x00000000)
             .onClick { _, _, _ ->
                 modalBg.visible = true
+                codeEditor.active = false
                 true
             }
             .childOf(sidebar)
@@ -114,7 +116,7 @@ class DatapackEditorScreen : VexelScreen() {
             .borderColor(0x00000000)
             .childOf(modalBg)
 
-        val mtWidth = NVGRenderer.textWidth("Functions", 12F, NVGRenderer.defaultFont)
+        val mtWidth = NVGRenderer.textWidth("Enter a name for function", 16F, NVGRenderer.defaultFont)
         Text("Enter a name for function")
             .setPositioning(-mtWidth, Pos.ParentCenter, 5F, Pos.ParentPixels)
             .fontSize(16F)
@@ -142,6 +144,7 @@ class DatapackEditorScreen : VexelScreen() {
                     ClientPackets.sendCreateFunctionPacket(functionName)
                     modalFunctionNameField.value = ""
                     modalBg.visible = false
+                    codeEditor.active = true
                 }
                 true
             }
@@ -156,6 +159,7 @@ class DatapackEditorScreen : VexelScreen() {
             .borderColor(0x00000000)
             .onClick { _, _, _ ->
                 modalBg.visible = false
+                codeEditor.active = true
                 true
             }
             .childOf(modalWindow)
@@ -173,46 +177,39 @@ class DatapackEditorScreen : VexelScreen() {
             .fontSize(20F)
             .childOf(layout)
 
-        codeInput = CodeEditor("")
+        codeEditor = CodeEditor("")
             .setPositioning(0f, Pos.ParentPixels, 0f, Pos.ParentPixels)
             .setSizing(100f, Size.ParentPerc, 100f, Size.ParentPerc)
             .childOf(codeLayout)
-        codeInput.visible = false
+        codeEditor.visible = false
         
-        codeInput.onUnsavedChanges = { unsaved ->
-            if (currentFunction != null) {
-                if (unsaved) {
-                    unsavedFunctions.add(currentFunction!!)
-                } else {
-                    unsavedFunctions.remove(currentFunction!!)
-                }
-                updateButtonTexts()
+        codeEditor.onUnsavedChanges = { unsaved ->
+            if (currentFunction != null && unsaved) {
+                currentFunctionButton?.textColor = 0xFF787878.toInt()
             }
         }
     }
 
-    private fun loadFunctionsList() {
-        ClientPackets.sendGetFunctionsListPacket()
-    }
 
     private fun registerPacketHandlers() {
         ClientPlayNetworking.registerGlobalReceiver(ClientPackets.GET_FUNCTIONS_LIST_PACKET) { client, handler, buf, responseSender ->
             val functionsCount = buf.readInt()
-            val functions = mutableListOf<String>()
+            val functionsList = mutableListOf<String>()
             
             repeat(functionsCount) {
-                functions.add(buf.readString())
+                functionsList.add(buf.readString())
             }
             
             client.execute {
-                updateFunctionsList(functions)
+                functions = functionsList
+                renderFunctionTree()
                 updateButtonColors()
             }
         }
         
         ClientPlayNetworking.registerGlobalReceiver(ClientPackets.FUNCTION_CREATED_PACKET) { client, handler, buf, responseSender ->
             client.execute {
-                loadFunctionsList()
+                ClientPackets.sendGetFunctionsListPacket()
             }
         }
         
@@ -221,19 +218,13 @@ class DatapackEditorScreen : VexelScreen() {
             val content = buf.readString()
             
             client.execute {
-                if (functionName == codeInput.filePath) {
-                    codeInput.value = content
-                    codeInput.isLoaded = true
-                    codeInput.hasUnsavedChanges = false
-                    unsavedFunctions.remove(functionName)
+                if (functionName == codeEditor.filePath) {
+                    codeEditor.value = content
+                    codeEditor.isLoaded = true
+                    codeEditor.hasUnsavedChanges = false
                 }
             }
         }
-    }
-
-    private fun updateFunctionsList(functions: List<String>) {
-        allFunctions = functions
-        renderFunctionTree()
     }
 
     private fun renderFunctionTree() {
@@ -241,50 +232,36 @@ class DatapackEditorScreen : VexelScreen() {
         functionButtons.clear()
         folderButtons.clear()
         functionButtonPath.clear()
-        functionButtonName.clear()
 
-        val tree = buildFunctionTree(allFunctions)
+        val tree = buildFunctionTree(functions)
         renderTree(tree, 0, 0f)
     }
 
-    private fun buildFunctionTree(functions: List<String>): TreeNode {
+    fun buildFunctionTree(functions: List<String>): TreeNode {
         val root = TreeNode("", "", true)
 
-        fun addPath(path: String) {
-            if (path.isEmpty()) return
+        functions.forEach { path ->
+            val parts = path
+                .substringAfter(":", path)
+                .split("/")
+                .filter { it.isNotEmpty() }
 
-            val nsSplit = path.split(":", limit = 2)
-            val segments = mutableListOf<String>()
-            if (nsSplit.size == 2) {
-                segments.add(nsSplit[0])
-                segments.addAll(nsSplit[1].split('/').filter { it.isNotEmpty() })
-            } else {
-                segments.addAll(path.split('/').filter { it.isNotEmpty() })
-            }
+            var currentFunc = root
+            var fullPath = ""
 
-            var current = root
-            var built = ""
-            for ((index, segment) in segments.withIndex()) {
-                built = if (built.isEmpty()) segment else "$built/$segment"
-                val isLast = index == segments.lastIndex
-                val existing = current.children.firstOrNull { it.name == segment && it.isFolder == !isLast }
-                if (existing != null) {
-                    current = existing
-                } else {
-                    val node = TreeNode(segment, if (isLast) path else built, !isLast)
-                    current.children.add(node)
-                    current = node
-                }
+            parts.forEachIndexed { index, part ->
+                val isFile = index == parts.lastIndex && part.endsWith(".mcfunction")
+
+                fullPath = if (fullPath.isEmpty()) part else "$fullPath/$part"
+
+                currentFunc = currentFunc.children.find { it.name == part } ?: TreeNode(
+                    part,
+                    fullPath,
+                    !isFile
+                ).also { currentFunc.children.add(it) }
             }
         }
 
-        functions.filter { it.isNotEmpty() }.forEach { addPath(it) }
-
-        fun sortNode(node: TreeNode) {
-            node.children.sortWith(compareBy<TreeNode> { !it.isFolder }.thenBy { it.name.lowercase() })
-            node.children.forEach { sortNode(it) }
-        }
-        sortNode(root)
         return root
     }
 
@@ -315,31 +292,32 @@ class DatapackEditorScreen : VexelScreen() {
             } else {
                 val functionName = child.fullPath
                 val isCurrentFunction = currentFunction == functionName
-                val unsaved = unsavedFunctions.contains(functionName)
-                val btn = Button(if (unsaved) "${child.name}*" else child.name)
+                val btn = Button(child.name.removeSuffix(".mcfunction"))
                     .setPositioning(depth * 12f, Pos.ParentPixels, yOffset, Pos.ParentPixels)
                     .setSizing(100f - depth * 12f, Size.ParentPerc, 25f, Size.Pixels)
                     .backgroundColor(0xFF333333.toInt())
                     .hoverColor(0xFF303030.toInt())
                     .pressedColor(0xFF272727.toInt())
                     .borderColor(0x00000000)
-                    .textColor(if (!unsaved) 0xFFFFFFFF.toInt() else 0xFFB5B5B5.toInt())
+                    .textColor(0xFFFFFFFF.toInt())
                     .onClick { _, _, _ ->
-                        if (!isCurrentFunction) {
-                            currentFunction = functionName
-                            codeInput.filePath = functionName
-                            codeInput.loadFile()
-                            codeInput.visible = true
-                            codeEmptyText.visible = false
-                            updateButtonColors()
-                        }
+                        if (isCurrentFunction) return@onClick false
+
+                        currentFunction = functionName
+                        codeEditor.filePath = functionName
+                        codeEditor.loadFile()
+                        codeEditor.visible = true
+                        codeEmptyText.visible = false
+                        updateButtonColors()
                         true
                     }
                     .childOf(functionsContainer)
+
+                if (isCurrentFunction) currentFunctionButton = btn
                 functionButtons.add(btn)
                 functionButtonPath[btn] = functionName
-                functionButtonName[btn] = child.name
                 updateButtonColors()
+
                 yOffset += 30f
             }
         }
@@ -356,17 +334,7 @@ class DatapackEditorScreen : VexelScreen() {
         }
     }
 
-    private fun updateButtonTexts() {
-        functionButtons.forEach { button ->
-            val path = functionButtonPath[button]
-            val unsaved = unsavedFunctions.contains(path)
-            val rawName = functionButtonName[button] ?: return@forEach
-            button.text = if (unsaved) "$rawName*" else rawName
-        }
-    }
-
     override fun onCloseGui() {
-        functionButtons.clear()
         ClientPlayNetworking.unregisterGlobalReceiver(ClientPackets.GET_FUNCTIONS_LIST_PACKET)
         ClientPlayNetworking.unregisterGlobalReceiver(ClientPackets.FUNCTION_CREATED_PACKET)
         ClientPlayNetworking.unregisterGlobalReceiver(ClientPackets.GET_FUNCTION_PACKET)

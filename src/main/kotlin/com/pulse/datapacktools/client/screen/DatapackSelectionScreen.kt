@@ -8,13 +8,15 @@ import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.text.Text
 import net.minecraft.util.Colors
 
-class DatapackSelectionScreen : Screen(Text.translatable("gui.datapacktools.datapack_selection.screen_title")) {
+class DatapackSelectionScreen(val parent: Screen? = null) : Screen(Text.translatable("gui.datapacktools.datapack_selection.screen_title")) {
 
-    private val maxDatapacks = 15
+    val maxDatapacks = 15
+    var availableDatapacks = listOf<String>()
+
     private val datapackButtons: MutableList<ButtonWidget> = mutableListOf()
     private lateinit var cancelButton: ButtonWidget
 
-    private var availableDatapacks = listOf<String>()
+    var current = ""
 
     override fun init() {
         super.init()
@@ -23,8 +25,8 @@ class DatapackSelectionScreen : Screen(Text.translatable("gui.datapacktools.data
             val btn = ButtonWidget.builder(Text.literal("")) {
                 val name = availableDatapacks.getOrNull(i)
                 if (!name.isNullOrBlank()) {
-                    close()
-                    client?.setScreen(NamespaceSelectionScreen(name))
+                    ClientPlayNetworking.unregisterGlobalReceiver(ClientPackets.GET_DATAPACKS_PACKET)
+                    client?.setScreen(NamespaceSelectionScreen(name, parent))
                 }
             }.dimensions(width / 2 - 100, height / 2 - 40 + i * 22, 200, 20).build()
             btn.visible = false
@@ -60,6 +62,14 @@ class DatapackSelectionScreen : Screen(Text.translatable("gui.datapacktools.data
             Colors.GRAY
         )
 
+        context.drawCenteredTextWithShadow(
+            textRenderer,
+            Text.translatable("gui.datapacktools.datapack_selection.current", current),
+            width / 2,
+            height / 2 - 60,
+            Colors.GRAY
+        )
+
         if (availableDatapacks.isEmpty()) {
             context.drawCenteredTextWithShadow(
                 textRenderer,
@@ -90,6 +100,9 @@ class DatapackSelectionScreen : Screen(Text.translatable("gui.datapacktools.data
                 availableDatapacks = datapacks
                 updateDatapackButtons()
             }
+        }
+        ClientPlayNetworking.registerGlobalReceiver(ClientPackets.GET_CURRENT_PACKET) { client, handler, buf, responseSender ->
+            current = buf.readString()
         }
     }
 

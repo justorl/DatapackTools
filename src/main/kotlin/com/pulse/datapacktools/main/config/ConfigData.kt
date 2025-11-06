@@ -5,4 +5,5 @@ class ConfigData {
     var enableWritingInExistingFunctions = true
     var datapackNamespace = "datapacktools"
     var datapackName = "datapacktools"
+    var modPermissionLevel = 4
 }

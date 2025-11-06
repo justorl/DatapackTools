@@ -14,7 +14,7 @@ object SetDatapackPacket {
             val datapackName = buf.readString()
             val namespaceName = buf.readString()
 
-            if (player.hasPermissionLevel(4)) {
+            if (player.hasPermissionLevel(ModConfig.data.modPermissionLevel)) {
                 server.execute {
                     handle(player, datapackName, namespaceName)
                 }

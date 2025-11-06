@@ -17,7 +17,7 @@ object SaveFunctionPacket {
             val functionName = buf.readString()
             val content = buf.readString()
 
-            if (player.hasPermissionLevel(4)) {
+            if (player.hasPermissionLevel(ModConfig.data.modPermissionLevel)) {
                 server.execute {
                     handle(player, functionName, content)
                 }
@@ -30,7 +30,7 @@ object SaveFunctionPacket {
         createDefaultDatapack(worldDir)
 
         val functionsDir = File(worldDir, "datapacks/${ModConfig.data.datapackName}/data/${ModConfig.data.datapackNamespace}/functions")
-        val functionFile = File(functionsDir, "${functionName}.mcfunction")
+        val functionFile = File(functionsDir, functionName)
         functionFile.writeText(content)
 
         updateDatapack(player)

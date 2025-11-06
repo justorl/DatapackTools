@@ -92,6 +92,8 @@ class CodeEditor(
 
     private val lineNumberWidth: Float = 50f
 
+    var active = true
+
     private val bg = Rectangle(
         backgroundColor,
         borderColor,
@@ -160,7 +162,7 @@ class CodeEditor(
         }
 
         onClick { mouseX, mouseY, button ->
-            if (button != 0) return@onClick false
+            if (button != 0 || !active) return@onClick false
 
             val clickedOnField = mouseX in x..(x + width) && mouseY in y..(y + height)
 
@@ -210,6 +212,7 @@ class CodeEditor(
         }
 
         onCharType { keyCode, scanCode, char ->
+            if (!active) return@onCharType false
             val keyHandled = keyCode != GLFW.GLFW_KEY_UNKNOWN && keyTyped(keyCode, scanCode, char)
             val charHandled = char != '\u0000' && keyCode == GLFW.GLFW_KEY_UNKNOWN && charTyped(char)
 
@@ -954,9 +957,7 @@ class CodeEditor(
     }
 
     fun loadFile() {
-        if (filePath.isNotEmpty()) {
-            ClientPackets.sendGetFunctionPacket(filePath)
-        }
+        if (filePath.isNotEmpty()) ClientPackets.sendGetFunctionPacket(filePath)
     }
 
     fun saveFile() {

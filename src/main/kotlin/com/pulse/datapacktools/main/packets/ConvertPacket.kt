@@ -24,7 +24,7 @@ object ConvertPacket {
             val functionName = buf.readString().removeSuffix("/")
             val changeCommand = buf.readBoolean()
 
-            if (player.hasPermissionLevel(4)) {
+            if (player.hasPermissionLevel(ModConfig.data.modPermissionLevel)) {
                 server.execute {
                     handle(player, functionName, changeCommand)
                 }

@@ -18,7 +18,7 @@ object CreateFunctionPacket {
         ServerPlayNetworking.registerGlobalReceiver(ID) { server, player, handler, buf, responseSender ->
             val functionName = buf.readString()
 
-            if (player.hasPermissionLevel(4)) {
+            if (player.hasPermissionLevel(ModConfig.data.modPermissionLevel)) {
                 server.execute {
                     handle(player, functionName)
                 }

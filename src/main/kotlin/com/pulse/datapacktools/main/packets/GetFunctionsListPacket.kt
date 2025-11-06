@@ -15,7 +15,7 @@ object GetFunctionsListPacket {
 
     fun register() {
         ServerPlayNetworking.registerGlobalReceiver(ID) { server, player, handler, buf, responseSender ->
-            if (player.hasPermissionLevel(4)) {
+            if (player.hasPermissionLevel(ModConfig.data.modPermissionLevel)) {
                 server.execute {
                     handle(player)
                 }
@@ -36,7 +36,7 @@ object GetFunctionsListPacket {
             .filter { it.isFile && it.extension == "mcfunction" }
             .forEach { file ->
                 val rel = file.relativeTo(functionsDir).invariantSeparatorsPath
-                functions.add(rel.removeSuffix(".mcfunction"))
+                functions.add(rel)
             }
 
         val buf = PacketByteBufs.create()

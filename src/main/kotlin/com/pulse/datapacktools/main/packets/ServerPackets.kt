@@ -10,5 +10,6 @@ object ServerPackets {
         GetDatapacksPacket.register()
         SetDatapackPacket.register()
         GetNamespacesPacket.register()
+        GetCurrentPacket.register()
     }
 }

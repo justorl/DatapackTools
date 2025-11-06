@@ -54,12 +54,10 @@ class CommandSuggester(
     fun refresh(inputText: String, cursorPos: Int) {
         if (inputText.isBlank()) { hideCmp(); return }
 
-        if (parse != null && parse!!.reader.string != inputText) {
-            parse = null
-        }
+        if (parse?.reader?.string != inputText) parse = null
 
-        val reader = StringReader(inputText)
         val dispatcher = mc.player?.networkHandler?.commandDispatcher ?: return
+        val reader = StringReader(inputText)
 
         if (parse == null) {
             parse = dispatcher.parse(reader, mc.player?.networkHandler?.commandSource)
@@ -68,19 +66,15 @@ class CommandSuggester(
         if (cursorPos >= reader.cursor) {
             pendingSuggestions = dispatcher.getCompletionSuggestions(parse, cursorPos)
             pendingSuggestions?.thenRun {
-                if (pendingSuggestions?.isDone == true) {
-                    showSuggestions()
-                }
+                if (pendingSuggestions?.isDone == true) showSuggestions()
             }
         }
     }
 
     private fun showSuggestions() {
         val result = pendingSuggestions?.join() ?: return
-        if (result.isEmpty) {
-            visible = false
-            return
-        }
+        if (result.isEmpty) { visible = false; return }
+
         suggestions = sortSuggestions(result)
         selectedIndex = 0
         scrollOffset = 0
@@ -91,31 +85,17 @@ class CommandSuggester(
     private fun sortSuggestions(suggestions: Suggestions): List<Suggestion> {
         val text = getCurrentText?.invoke() ?: ""
         val cursor = getCursorPosition?.invoke() ?: 0
-        val currentWord = text.substring(0, cursor)
-        val startOfWord = getStartOfWord(currentWord)
-        val typedPart = currentWord.substring(startOfWord).lowercase()
-        val matching = mutableListOf<Suggestion>()
-        val nonMatching = mutableListOf<Suggestion>()
+        val typedPart = text.substring(0, cursor).substring(getStartOfWord(text.substring(0, cursor))).lowercase()
 
-        for (suggestion in suggestions.list) {
-            if (suggestion.text.startsWith(typedPart) ||
-                suggestion.text.startsWith("minecraft:$typedPart")) {
-                matching.add(suggestion)
-            } else {
-                nonMatching.add(suggestion)
-            }
-        }
-
-        matching.addAll(nonMatching)
-        return matching
+        return suggestions.list.partition {
+            it.text.startsWith(typedPart) || it.text.startsWith("minecraft:$typedPart")
+        }.let { (matching, nonMatching) -> matching + nonMatching }
     }
 
     private fun getStartOfWord(input: String): Int {
         if (input.isEmpty()) return 0
-        var i = 0
-        val matcher = Regex("(\\s+)").findAll(input)
-        matcher.forEach { i = it.range.last + 1 }
-        return i
+        val lastSpace = input.lastIndexOf(' ')
+        return if (lastSpace == -1) 0 else lastSpace + 1
     }
 
     private fun createSuggestion() {
@@ -126,12 +106,9 @@ class CommandSuggester(
 
         if (!visible || suggestions.isEmpty()) return
 
-        var maxWidth = 0f
-        suggestions.forEach { suggestion ->
-            val width = NVGRenderer.textWidth(suggestion.text, fontSize, NVGRenderer.defaultFont)
-            maxWidth = maxWidth.coerceAtLeast(width)
-        }
-
+        val maxWidth = suggestions.maxOfOrNull {
+            NVGRenderer.textWidth(it.text, fontSize, NVGRenderer.defaultFont)
+        } ?: 0f
         val displayCount = suggestions.size.coerceAtMost(maxSuggestions)
         val itemHeight = fontSize + 4f
         val totalHeight = displayCount * itemHeight
@@ -140,42 +117,47 @@ class CommandSuggester(
         width = maxWidth + 10f
         height = totalHeight
 
-        for (i in 0 until displayCount) {
-            val bg = Rectangle(suggestionBgColor, 0x00000000, 0f, 0f)
-                .setPositioning(0f, Pos.ParentPixels, i * itemHeight, Pos.ParentPixels)
-                .setSizing(maxWidth + 10f, Size.Pixels, itemHeight, Size.Pixels)
-                .ignoreMouseEvents()
-                .ignoreFocus()
-                .childOf(container)
-            suggestionBgs.add(bg)
+        repeat(displayCount) { i ->
+            suggestionBgs.add(
+                Rectangle(suggestionBgColor, 0x00000000, 0f, 0f)
+                    .setPositioning(0f, Pos.ParentPixels, i * itemHeight, Pos.ParentPixels)
+                    .setSizing(maxWidth + 10f, Size.Pixels, itemHeight, Size.Pixels)
+                    .ignoreMouseEvents()
+                    .ignoreFocus()
+                    .childOf(container)
+            )
 
-            val text = Text("", suggestionTextColor, fontSize)
-                .setPositioning(5f, Pos.ParentPixels, i * itemHeight + 2f, Pos.ParentPixels)
-                .ignoreMouseEvents()
-                .ignoreFocus()
-                .childOf(container)
-            suggestionTexts.add(text)
+            suggestionTexts.add(
+                Text("", suggestionTextColor, fontSize)
+                    .setPositioning(5f, Pos.ParentPixels, i * itemHeight + 2f, Pos.ParentPixels)
+                    .ignoreMouseEvents()
+                    .ignoreFocus()
+                    .childOf(container)
+            )
         }
 
         updateSuggestionDisplay()
     }
 
     private fun updateSuggestionDisplay() {
-        val displayCount = suggestions.size.coerceAtMost(maxSuggestions)
-        for (i in 0 until displayCount) {
+        repeat(suggestions.size.coerceAtMost(maxSuggestions)) { i ->
             val suggestionIndex = i + scrollOffset
-            if (suggestionIndex >= suggestions.size) break
+            if (suggestionIndex >= suggestions.size) return@repeat
+
             val suggestion = suggestions[suggestionIndex]
             val isSelected = suggestionIndex == selectedIndex
 
-            suggestionTexts[i].text = suggestion.text
-            suggestionTexts[i].textColor = if (isSelected) selectedTextColor else suggestionTextColor
+            suggestionTexts[i].apply {
+                text = suggestion.text
+                textColor = if (isSelected) selectedTextColor else suggestionTextColor
+            }
             suggestionBgs[i].backgroundColor(if (isSelected) 0xE0333333.toInt() else suggestionBgColor)
         }
     }
 
     fun handleKey(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
         if (!visible || suggestions.isEmpty()) return false
+
         when (keyCode) {
             GLFW.GLFW_KEY_UP -> {
                 scroll(-1)
@@ -201,51 +183,54 @@ class CommandSuggester(
 
     override fun handleMouseClick(mouseX: Float, mouseY: Float, button: Int): Boolean {
         if (!visible || button != 0) return false
+
         val relX = mouseX - x
         val relY = mouseY - y
-        if (relX in 0f..width && relY in 0f..height) {
-            val itemHeight = fontSize + 4f
-            val clickedIndex = (relY / itemHeight).toInt() + scrollOffset
+
+        return if (relX in 0f..width && relY in 0f..height) {
+            val clickedIndex = ((relY / (fontSize + 4f)).toInt() + scrollOffset)
             if (clickedIndex in suggestions.indices) {
                 selectedIndex = clickedIndex
                 makeSuggestion()
-                return true
-            }
-        }
-        return false
+                true
+            } else false
+        } else false
     }
 
     override fun handleMouseScroll(mouseX: Float, mouseY: Float, horizontal: Double, vertical: Double): Boolean {
         if (!visible) return false
+
         val mouseX = mc.mouse.x * mc.window.scaledWidth / mc.window.width
         val mouseY = mc.mouse.y * mc.window.scaledHeight / mc.window.height
         val relX = mouseX - x
         val relY = mouseY - y
-        if (relX in 0f..width && relY in 0f..height) {
+
+        return if (relX in 0f..width && relY in 0f..height) {
             scrollOffset = MathHelper.clamp(
                 (scrollOffset - horizontal).toInt(),
                 0,
                 (suggestions.size - maxSuggestions).coerceAtLeast(0)
             )
             updateSuggestionDisplay()
-            return true
-        }
-        return false
+            true
+        } else false
     }
 
     private fun scroll(offset: Int) {
         selectedIndex = (selectedIndex + offset).coerceIn(0, suggestions.size - 1)
-        if (selectedIndex < scrollOffset) scrollOffset = selectedIndex
-        else if (selectedIndex >= scrollOffset + maxSuggestions) scrollOffset = selectedIndex - maxSuggestions + 1
-        scrollOffset = scrollOffset.coerceIn(0, (suggestions.size - maxSuggestions).coerceAtLeast(0))
+        scrollOffset = when {
+            selectedIndex < scrollOffset -> selectedIndex
+            selectedIndex >= scrollOffset + maxSuggestions -> selectedIndex - maxSuggestions + 1
+            else -> scrollOffset
+        }.coerceIn(0, (suggestions.size - maxSuggestions).coerceAtLeast(0))
         updateSuggestionDisplay()
     }
 
     private fun makeSuggestion() {
         if (suggestions.isEmpty()) return
-        val suggestion = suggestions[selectedIndex]
+
         val currentText = getCurrentText?.invoke() ?: ""
-        onSuggestionApplied?.invoke(suggestion.apply(currentText))
+        onSuggestionApplied?.invoke(suggestions[selectedIndex].apply(currentText))
         completed = true
         hideCmp()
     }

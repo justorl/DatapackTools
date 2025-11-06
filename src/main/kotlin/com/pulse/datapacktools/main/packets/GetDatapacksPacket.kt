@@ -1,6 +1,7 @@
 package com.pulse.datapacktools.main.packets
 
 import com.pulse.datapacktools.client.packets.ClientPackets
+import com.pulse.datapacktools.main.config.ModConfig
 import com.pulse.datapacktools.main.utils.SessionUtils
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
@@ -13,7 +14,7 @@ object GetDatapacksPacket {
 
     fun register() {
         ServerPlayNetworking.registerGlobalReceiver(ID) { server, player, handler, buf, responseSender ->
-            if (player.hasPermissionLevel(4)) {
+            if (player.hasPermissionLevel(ModConfig.data.modPermissionLevel)) {
                 server.execute {
                     handle(player)
                 }

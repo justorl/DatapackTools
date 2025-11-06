@@ -16,7 +16,7 @@ object GetFunctionPacket {
         ServerPlayNetworking.registerGlobalReceiver(ID) { server, player, handler, buf, responseSender ->
             val functionName = buf.readString()
 
-            if (player.hasPermissionLevel(4)) {
+            if (player.hasPermissionLevel(ModConfig.data.modPermissionLevel)) {
                 server.execute {
                     handle(player, functionName)
                 }
@@ -28,7 +28,7 @@ object GetFunctionPacket {
         val worldDir: File = SessionUtils.worldFolderPath?.toFile() ?: return
 
         val functionsDir = File(worldDir, "datapacks/${ModConfig.data.datapackName}/data/${ModConfig.data.datapackNamespace}/functions")
-        val functionFile = File(functionsDir, "${functionName}.mcfunction")
+        val functionFile = File(functionsDir, functionName)
 
         if (!functionFile.exists()) return
 

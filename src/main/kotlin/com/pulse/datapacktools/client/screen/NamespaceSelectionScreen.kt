@@ -8,7 +8,7 @@ import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.text.Text
 import net.minecraft.util.Colors
 
-class NamespaceSelectionScreen(val datapackName: String) : Screen(Text.translatable("gui.datapacktools.namespace_selection.screen_title")) {
+class NamespaceSelectionScreen(val datapackName: String, val parent: Screen? = null) : Screen(Text.translatable("gui.datapacktools.namespace_selection.screen_title")) {
 
     private val maxNamespaces = 15
     private val namespaceButtons: MutableList<ButtonWidget> = mutableListOf()
@@ -24,7 +24,8 @@ class NamespaceSelectionScreen(val datapackName: String) : Screen(Text.translata
                 val name = availableNamespaces.getOrNull(i)
                 if (!name.isNullOrBlank()) {
                     ClientPackets.sendSetDatapackPacket(datapackName, name)
-                    close()
+                    ClientPlayNetworking.unregisterGlobalReceiver(ClientPackets.GET_NAMESPACES_PACKET)
+                    client?.setScreen(parent)
                 }
             }.dimensions(width / 2 - 100, height / 2 - 40 + i * 22, 200, 20).build()
             btn.visible = false

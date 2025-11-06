@@ -14,6 +14,7 @@ object ClientPackets {
     val GET_DATAPACKS_PACKET = Identifier("datapacktools", "get_datapacks")
     val GET_NAMESPACES_PACKET = Identifier("datapacktools", "get_namespaces")
     val SET_DATAPACK = Identifier("datapacktools", "set_datapack")
+    val GET_CURRENT_PACKET = Identifier("datapacktools", "get_current")
 
     fun sendConvertPacket(functionName: String, changeCommand: Boolean) {
         val buf = PacketByteBufs.create()
@@ -62,5 +63,10 @@ object ClientPackets {
         buf.writeString(datapackName)
         buf.writeString(namespaceName)
         ClientPlayNetworking.send(SET_DATAPACK, buf)
+    }
+
+    fun sendGetCurrentPacket() {
+        val buf = PacketByteBufs.create()
+        ClientPlayNetworking.send(GET_CURRENT_PACKET, buf)
     }
 }
