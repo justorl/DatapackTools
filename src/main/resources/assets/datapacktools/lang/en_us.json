@@ -3,6 +3,7 @@
   "gui.datapacktools.datapack_selection.screen_title": "Select datapack for editing",
   "gui.datapacktools.datapack_selection.subtitle": "Select datapack, that you will edit",
   "gui.datapacktools.datapack_selection.empty": "Datapacks were not found",
+  "gui.datapacktools.datapack_selection.current": "Currently selected: %s",
   "gui.datapacktools.namespace_selection.screen_title": "Select datapack for editing",
   "gui.datapacktools.namespace_selection.subtitle": "Choose namespace of datapack %s",
   "gui.datapacktools.namespace_selection.empty": "Namespaces were not found",

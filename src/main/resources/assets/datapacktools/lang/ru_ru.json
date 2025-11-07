@@ -3,6 +3,7 @@
   "gui.datapacktools.datapack_selection.screen_title": "Установить редактируемый датапак",
   "gui.datapacktools.datapack_selection.subtitle": "Выберите датапак, который вы будете редактировать",
   "gui.datapacktools.datapack_selection.empty": "Датапаки были не найдены",
+  "gui.datapacktools.datapack_selection.current": "Сейчас выбрано: %s",
   "gui.datapacktools.namespace_selection.screen_title": "Установить редактируемый датапак",
   "gui.datapacktools.namespace_selection.subtitle": "Выберите неймспейс в датапаке %s",
   "gui.datapacktools.namespace_selection.empty": "Неймспейсы не найдены",

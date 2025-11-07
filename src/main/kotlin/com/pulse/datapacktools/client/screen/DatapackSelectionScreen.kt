@@ -66,7 +66,7 @@ class DatapackSelectionScreen(val parent: Screen? = null) : Screen(Text.translat
             textRenderer,
             Text.translatable("gui.datapacktools.datapack_selection.current", current),
             width / 2,
-            height / 2 - 60,
+            height / 2 - 20,
             Colors.GRAY
         )
 
