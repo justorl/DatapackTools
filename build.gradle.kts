@@ -34,6 +34,7 @@ dependencies {
 
     modCompileOnly("com.github.Tectato:BetterCommandBlockUI:1.20-SNAPSHOT")
     modImplementation(include("xyz.meowing:vexel-1.20.1-fabric:121")!!)
+    modImplementation(include("xyz.meowing:knit-1.20.1-fabric:117")!!)
 }
 
 tasks {

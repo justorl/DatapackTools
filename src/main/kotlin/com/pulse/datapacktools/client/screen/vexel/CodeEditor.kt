@@ -3,6 +3,7 @@ package com.pulse.datapacktools.client.screen.vexel
 import com.pulse.datapacktools.client.packets.ClientPackets
 import net.minecraft.client.MinecraftClient
 import org.lwjgl.glfw.GLFW
+import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.input.KnitKeyboard
 import xyz.meowing.knit.api.input.KnitKeys
 import xyz.meowing.vexel.Vexel
@@ -63,7 +64,7 @@ class CodeEditor(
             selectionAnchorLine = selectionAnchorLine.coerceIn(0, lines.size - 1)
             selectionAnchorCol = selectionAnchorCol.coerceIn(0, lines[selectionAnchorLine].length)
             syncComponents()
-            onValueChange?.invoke(field)
+            onValueChange.forEach { it. invoke(field) }
         }
 
     private var lines = value.split('\n').toMutableList()
@@ -858,7 +859,7 @@ class CodeEditor(
 
     private fun copySelection() {
         if (!hasSelection) return
-        Vexel.mc.keyboard.clipboard = getSelectedText()
+        client.keyboard.clipboard = getSelectedText()
     }
 
     private fun cutSelection() {
@@ -868,7 +869,7 @@ class CodeEditor(
     }
 
     private fun paste() {
-        val clipboardText = Vexel.mc.keyboard.clipboard
+        val clipboardText = client.keyboard.clipboard
         if (clipboardText.isNotEmpty()) {
             insertText(clipboardText)
         }
