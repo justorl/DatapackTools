@@ -26,6 +26,7 @@ class DatapackSelectionScreen(val parent: Screen? = null) : Screen(Text.translat
                 val name = availableDatapacks.getOrNull(i)
                 if (!name.isNullOrBlank()) {
                     ClientPlayNetworking.unregisterGlobalReceiver(ClientPackets.GET_DATAPACKS_PACKET)
+                    ClientPlayNetworking.unregisterGlobalReceiver(ClientPackets.GET_CURRENT_PACKET)
                     client?.setScreen(NamespaceSelectionScreen(name, parent))
                 }
             }.dimensions(width / 2 - 100, height / 2 - 40 + i * 22, 200, 20).build()
@@ -41,6 +42,7 @@ class DatapackSelectionScreen(val parent: Screen? = null) : Screen(Text.translat
 
         registerPacketHandlers()
         ClientPackets.sendGetDatapacksPacket()
+        ClientPackets.sendGetCurrentPacket()
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
@@ -66,7 +68,7 @@ class DatapackSelectionScreen(val parent: Screen? = null) : Screen(Text.translat
             textRenderer,
             Text.translatable("gui.datapacktools.datapack_selection.current", current),
             width / 2,
-            height / 2 - 60,
+            height / 2 + 30,
             Colors.GRAY
         )
 
@@ -85,6 +87,7 @@ class DatapackSelectionScreen(val parent: Screen? = null) : Screen(Text.translat
 
     override fun close() {
         ClientPlayNetworking.unregisterGlobalReceiver(ClientPackets.GET_DATAPACKS_PACKET)
+        ClientPlayNetworking.unregisterGlobalReceiver(ClientPackets.GET_CURRENT_PACKET)
         super.close()
     }
 

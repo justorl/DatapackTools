@@ -86,8 +86,8 @@ class CodeEditor(
     private var lastClickTime = 0L
     private var clickCount = 0
     var isLoaded = false
+
     var hasUnsavedChanges = false
-    
     var onUnsavedChanges: ((Boolean) -> Unit)? = null
 
     private val lineNumberWidth: Float = 50f
@@ -182,7 +182,7 @@ class CodeEditor(
 
                 lastClickTime = currentTime
 
-				when (clickCount) {
+                when (clickCount) {
                     1 -> {
                         cursorLine = clickedLine
                         cursorCol = clickedCol
@@ -201,7 +201,7 @@ class CodeEditor(
                 }
 
                 resetCaretBlink()
-				commandSuggester.refresh(lines[cursorLine], cursorCol)
+                commandSuggester.refresh(lines[cursorLine], cursorCol)
                 return@onClick true
             } else {
                 isFocused = false
@@ -450,7 +450,7 @@ class CodeEditor(
             return true
         }
 
-            when (keyCode) {
+        when (keyCode) {
             KnitKeys.KEY_ESCAPE.code -> {
                 isFocused = false
                 return true
@@ -458,54 +458,54 @@ class CodeEditor(
             KnitKeys.KEY_ENTER.code -> {
                 saveState()
                 insertText("\n")
-                    commandSuggester.refresh(lines[cursorLine], cursorCol)
+                commandSuggester.refresh(lines[cursorLine], cursorCol)
                 return true
             }
             KnitKeys.KEY_TAB.code -> {
                 saveState()
                 insertText("    ")
-                    commandSuggester.refresh(lines[cursorLine], cursorCol)
+                commandSuggester.refresh(lines[cursorLine], cursorCol)
                 return true
             }
             KnitKeys.KEY_BACKSPACE.code -> {
                 saveState()
                 if (ctrlDown) deletePrevWord()
                 else deleteChar()
-                    commandSuggester.refresh(lines[cursorLine], cursorCol)
+                commandSuggester.refresh(lines[cursorLine], cursorCol)
                 return true
             }
             KnitKeys.KEY_LEFT.code -> {
                 if (ctrlDown) moveWord(-1, shiftDown)
                 else moveCaret(-1, 0, shiftDown)
-                    commandSuggester.refresh(lines[cursorLine], cursorCol)
+                commandSuggester.refresh(lines[cursorLine], cursorCol)
                 return true
             }
             KnitKeys.KEY_RIGHT.code -> {
                 if (ctrlDown) moveWord(1, shiftDown)
                 else moveCaret(1, 0, shiftDown)
-                    commandSuggester.refresh(lines[cursorLine], cursorCol)
+                commandSuggester.refresh(lines[cursorLine], cursorCol)
                 return true
             }
             KnitKeys.KEY_UP.code -> {
                 moveCaret(0, -1, shiftDown)
-                    commandSuggester.refresh(lines[cursorLine], cursorCol)
+                commandSuggester.refresh(lines[cursorLine], cursorCol)
                 return true
             }
             KnitKeys.KEY_DOWN.code -> {
                 moveCaret(0, 1, shiftDown)
-                    commandSuggester.refresh(lines[cursorLine], cursorCol)
+                commandSuggester.refresh(lines[cursorLine], cursorCol)
                 return true
             }
             KnitKeys.KEY_HOME.code -> {
                 if (ctrlDown) moveCaretTo(0, 0, shiftDown)
                 else moveCaretTo(cursorLine, 0, shiftDown)
-                    commandSuggester.refresh(lines[cursorLine], cursorCol)
+                commandSuggester.refresh(lines[cursorLine], cursorCol)
                 return true
             }
             KnitKeys.KEY_END.code -> {
                 if (ctrlDown) moveCaretTo(lines.size - 1, lines.last().length, shiftDown)
                 else moveCaretTo(cursorLine, lines[cursorLine].length, shiftDown)
-                    commandSuggester.refresh(lines[cursorLine], cursorCol)
+                commandSuggester.refresh(lines[cursorLine], cursorCol)
                 return true
             }
         }
@@ -725,7 +725,6 @@ class CodeEditor(
             selectionAnchorCol = cursorCol
         }
         resetCaretBlink()
-        
         commandSuggester.refresh(lines[cursorLine], cursorCol)
     }
 
@@ -967,5 +966,4 @@ class CodeEditor(
             onUnsavedChanges?.invoke(false)
         }
     }
-
 }
