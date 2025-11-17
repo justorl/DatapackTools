@@ -1,22 +1,20 @@
-package com.pulse.datapacktools.main.packets
+package com.pulse.datapacktools.main.packets.custom
 
 import com.pulse.datapacktools.main.config.ModConfig
+import com.pulse.datapacktools.packets.SetDatapackPacket
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
-import net.minecraft.util.Identifier
 
-object SetDatapackPacket {
-    val ID = Identifier("datapacktools", "set_datapack")
-
+object ServerSetDatapackPacket {
     fun register() {
-        ServerPlayNetworking.registerGlobalReceiver(ID) { server, player, handler, buf, responseSender ->
-            val datapackName = buf.readString()
-            val namespaceName = buf.readString()
+        PayloadTypeRegistry.playC2S().register(SetDatapackPacket.ID, SetDatapackPacket.CODEC);
 
-            if (player.hasPermissionLevel(ModConfig.data.modPermissionLevel)) {
-                server.execute {
-                    handle(player, datapackName, namespaceName)
+        ServerPlayNetworking.registerGlobalReceiver(SetDatapackPacket.ID) { packet, context ->
+            if (context.player().hasPermissionLevel(ModConfig.data.modPermissionLevel)) {
+                context.server().execute {
+                    handle(context.player(), packet.datapackName, packet.namespaceName)
                 }
             }
         }

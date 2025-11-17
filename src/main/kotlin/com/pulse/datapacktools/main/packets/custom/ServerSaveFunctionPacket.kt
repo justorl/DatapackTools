@@ -1,25 +1,23 @@
-package com.pulse.datapacktools.main.packets
+package com.pulse.datapacktools.main.packets.custom
 
 import com.pulse.datapacktools.main.config.ModConfig
 import com.pulse.datapacktools.main.utils.DatapacksUtils.createDefaultDatapack
 import com.pulse.datapacktools.main.utils.DatapacksUtils.updateDatapack
 import com.pulse.datapacktools.main.utils.SessionUtils
+import com.pulse.datapacktools.packets.SaveFunctionPacket
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.util.Identifier
 import java.io.File
 
-object SaveFunctionPacket {
-    val ID = Identifier("datapacktools", "save_function")
-
+object ServerSaveFunctionPacket {
     fun register() {
-        ServerPlayNetworking.registerGlobalReceiver(ID) { server, player, handler, buf, responseSender ->
-            val functionName = buf.readString()
-            val content = buf.readString()
+        PayloadTypeRegistry.playC2S().register(SaveFunctionPacket.ID, SaveFunctionPacket.CODEC);
 
-            if (player.hasPermissionLevel(ModConfig.data.modPermissionLevel)) {
-                server.execute {
-                    handle(player, functionName, content)
+        ServerPlayNetworking.registerGlobalReceiver(SaveFunctionPacket.ID) { packet, context ->
+            if (context.player().hasPermissionLevel(ModConfig.data.modPermissionLevel)) {
+                context.server().execute {
+                    handle(context.player(), packet.functionName, packet.content)
                 }
             }
         }

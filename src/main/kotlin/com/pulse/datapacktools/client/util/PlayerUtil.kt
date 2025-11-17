@@ -3,7 +3,6 @@ package com.pulse.datapacktools.client.util
 import net.minecraft.block.entity.CommandBlockBlockEntity
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.network.ClientPlayerEntity
-import net.minecraft.screen.NamedScreenHandlerFactory
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.hit.HitResult
 import net.minecraft.util.math.Vec3d
@@ -15,7 +14,7 @@ object PlayerUtil {
         val lookVec: Vec3d = this.getRotationVec(1.0f)
         val reachVec: Vec3d = eyePos.add(lookVec.multiply(10.0))
 
-        val rayResult: BlockHitResult = this.world.raycast(
+        val rayResult: BlockHitResult = this.entityWorld.raycast(
             RaycastContext(
                 eyePos,
                 reachVec,

@@ -1,6 +1,10 @@
 package com.pulse.datapacktools.client.screen.vexel
 
-import com.pulse.datapacktools.client.packets.ClientPackets
+import com.pulse.datapacktools.packets.CreateFunctionPacket
+import com.pulse.datapacktools.packets.FunctionCreatedPacket
+import com.pulse.datapacktools.packets.GetFunctionsPacket
+import com.pulse.datapacktools.packets.SendFunctionPacket
+import com.pulse.datapacktools.packets.SendFunctionsPacket
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import xyz.meowing.vexel.components.base.Pos
 import xyz.meowing.vexel.components.base.Size
@@ -52,7 +56,7 @@ class DatapackEditorScreen : VexelScreen() {
         createCodeEditor()
 
         registerPacketHandlers()
-        ClientPackets.sendGetFunctionsListPacket()
+        ClientPlayNetworking.send(GetFunctionsPacket)
     }
 
     fun createMainLayout() {
@@ -141,7 +145,7 @@ class DatapackEditorScreen : VexelScreen() {
             .onClick { _, _, _ ->
                 val functionName = modalFunctionNameField.value
                 if (functionName.isNotEmpty()) {
-                    ClientPackets.sendCreateFunctionPacket(functionName)
+                    ClientPlayNetworking.send(CreateFunctionPacket(functionName))
                     modalFunctionNameField.value = ""
                     modalBg.visible = false
                     codeEditor.active = true
@@ -192,34 +196,24 @@ class DatapackEditorScreen : VexelScreen() {
 
 
     private fun registerPacketHandlers() {
-        ClientPlayNetworking.registerGlobalReceiver(ClientPackets.GET_FUNCTIONS_LIST_PACKET) { client, handler, buf, responseSender ->
-            val functionsCount = buf.readInt()
-            val functionsList = mutableListOf<String>()
-            
-            repeat(functionsCount) {
-                functionsList.add(buf.readString())
-            }
-            
-            client.execute {
-                functions = functionsList
+        ClientPlayNetworking.registerGlobalReceiver(SendFunctionsPacket.ID) { packet, context ->
+            context.client().execute {
+                functions = packet.functions
                 renderFunctionTree()
                 updateButtonColors()
             }
         }
         
-        ClientPlayNetworking.registerGlobalReceiver(ClientPackets.FUNCTION_CREATED_PACKET) { client, handler, buf, responseSender ->
-            client.execute {
-                ClientPackets.sendGetFunctionsListPacket()
+        ClientPlayNetworking.registerGlobalReceiver(FunctionCreatedPacket.ID) { packet, context ->
+            context.client().execute {
+                ClientPlayNetworking.send(GetFunctionsPacket)
             }
         }
         
-        ClientPlayNetworking.registerGlobalReceiver(ClientPackets.GET_FUNCTION_PACKET) { client, handler, buf, responseSender ->
-            val functionName = buf.readString()
-            val content = buf.readString()
-            
-            client.execute {
-                if (functionName == codeEditor.filePath) {
-                    codeEditor.value = content
+        ClientPlayNetworking.registerGlobalReceiver(SendFunctionPacket.ID) { packet, context ->
+            context.client().execute {
+                if (packet.functionName == codeEditor.filePath) {
+                    codeEditor.value = packet.content
                     codeEditor.isLoaded = true
                     codeEditor.hasUnsavedChanges = false
                 }
@@ -335,9 +329,9 @@ class DatapackEditorScreen : VexelScreen() {
     }
 
     override fun onCloseGui() {
-        ClientPlayNetworking.unregisterGlobalReceiver(ClientPackets.GET_FUNCTIONS_LIST_PACKET)
-        ClientPlayNetworking.unregisterGlobalReceiver(ClientPackets.FUNCTION_CREATED_PACKET)
-        ClientPlayNetworking.unregisterGlobalReceiver(ClientPackets.GET_FUNCTION_PACKET)
+        ClientPlayNetworking.unregisterGlobalReceiver(SendFunctionsPacket.ID.id)
+        ClientPlayNetworking.unregisterGlobalReceiver(FunctionCreatedPacket.ID.id)
+        ClientPlayNetworking.unregisterGlobalReceiver(GetFunctionsPacket.ID.id)
         super.onCloseGui()
     }
 }

@@ -1,23 +1,23 @@
-package com.pulse.datapacktools.main.packets
+package com.pulse.datapacktools.main.packets.custom
 
-import com.pulse.datapacktools.client.packets.ClientPackets
 import com.pulse.datapacktools.main.config.ModConfig
 import com.pulse.datapacktools.main.utils.DatapacksUtils.createDefaultDatapack
 import com.pulse.datapacktools.main.utils.SessionUtils
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
+import com.pulse.datapacktools.packets.GetFunctionsPacket
+import com.pulse.datapacktools.packets.SendFunctionsPacket
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.util.Identifier
 import java.io.File
 
-object GetFunctionsListPacket {
-    val ID = Identifier("datapacktools", "get_functions_list")
-
+object ServerGetFunctionsPacket {
     fun register() {
-        ServerPlayNetworking.registerGlobalReceiver(ID) { server, player, handler, buf, responseSender ->
-            if (player.hasPermissionLevel(ModConfig.data.modPermissionLevel)) {
-                server.execute {
-                    handle(player)
+        PayloadTypeRegistry.playC2S().register(GetFunctionsPacket.ID, GetFunctionsPacket.CODEC);
+
+        ServerPlayNetworking.registerGlobalReceiver(GetFunctionsPacket.ID) { packet, context ->
+            if (context.player().hasPermissionLevel(ModConfig.data.modPermissionLevel)) {
+                context.server().execute {
+                    handle(context.player())
                 }
             }
         }
@@ -39,9 +39,6 @@ object GetFunctionsListPacket {
                 functions.add(rel)
             }
 
-        val buf = PacketByteBufs.create()
-        buf.writeInt(functions.size)
-        functions.forEach { buf.writeString(it)  }
-        ServerPlayNetworking.send(player, ClientPackets.GET_FUNCTIONS_LIST_PACKET, buf)
+        ServerPlayNetworking.send(player, SendFunctionsPacket(functions))
     }
 }

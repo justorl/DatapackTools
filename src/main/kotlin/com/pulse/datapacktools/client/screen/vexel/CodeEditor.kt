@@ -1,12 +1,13 @@
 package com.pulse.datapacktools.client.screen.vexel
 
-import com.pulse.datapacktools.client.packets.ClientPackets
+import com.pulse.datapacktools.packets.GetFunctionPacket
+import com.pulse.datapacktools.packets.SaveFunctionPacket
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.client.MinecraftClient
 import org.lwjgl.glfw.GLFW
 import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.input.KnitKeyboard
 import xyz.meowing.knit.api.input.KnitKeys
-import xyz.meowing.vexel.Vexel
 import xyz.meowing.vexel.components.base.Pos
 import xyz.meowing.vexel.components.base.Size
 import xyz.meowing.vexel.components.base.VexelElement
@@ -957,12 +958,12 @@ class CodeEditor(
     }
 
     fun loadFile() {
-        if (filePath.isNotEmpty()) ClientPackets.sendGetFunctionPacket(filePath)
+        if (filePath.isNotEmpty()) ClientPlayNetworking.send(GetFunctionPacket(filePath))
     }
 
     fun saveFile() {
         if (filePath.isNotEmpty() && isLoaded) {
-            ClientPackets.sendSaveFunctionPacket(filePath, value)
+            ClientPlayNetworking.send(SaveFunctionPacket(filePath, value))
             hasUnsavedChanges = false
             onUnsavedChanges?.invoke(false)
         }

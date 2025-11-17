@@ -9,14 +9,14 @@ object DatapacksUtils {
     private val gson = GsonBuilder().setPrettyPrinting().create()
 
     fun updateDatapack(player: ServerPlayerEntity) {
-        val server = player.server
+        val server = player.entityWorld.server
         val dataManager = server.dataPackManager
         val keyName = "file/${ModConfig.data.datapackName}"
 
         if (ModConfig.data.enableAutomaticDatapackReload) {
-            dataManager.enabledNames.toMutableList().remove(keyName)
-            dataManager.enabledNames.toMutableList().add(keyName)
-            server.reloadResources(dataManager.enabledNames)
+            dataManager.disable(keyName)
+            dataManager.enable(keyName)
+            server.reloadResources(mutableListOf(keyName))
         }
     }
 

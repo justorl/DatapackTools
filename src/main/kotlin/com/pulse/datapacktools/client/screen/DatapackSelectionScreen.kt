@@ -1,6 +1,9 @@
 package com.pulse.datapacktools.client.screen
 
-import com.pulse.datapacktools.client.packets.ClientPackets
+import com.pulse.datapacktools.packets.GetDatapacksPacket
+import com.pulse.datapacktools.packets.SendCurrentPacket
+import com.pulse.datapacktools.packets.SendDatapacksPacket
+import com.pulse.datapacktools.packets.SendNamespacesPacket
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
@@ -25,7 +28,7 @@ class DatapackSelectionScreen(val parent: Screen? = null) : Screen(Text.translat
             val btn = ButtonWidget.builder(Text.literal("")) {
                 val name = availableDatapacks.getOrNull(i)
                 if (!name.isNullOrBlank()) {
-                    ClientPlayNetworking.unregisterGlobalReceiver(ClientPackets.GET_DATAPACKS_PACKET)
+                    ClientPlayNetworking.unregisterGlobalReceiver(SendNamespacesPacket.ID.id)
                     client?.setScreen(NamespaceSelectionScreen(name, parent))
                 }
             }.dimensions(width / 2 - 100, height / 2 - 40 + i * 22, 200, 20).build()
@@ -40,12 +43,10 @@ class DatapackSelectionScreen(val parent: Screen? = null) : Screen(Text.translat
         addDrawableChild(cancelButton)
 
         registerPacketHandlers()
-        ClientPackets.sendGetDatapacksPacket()
+        ClientPlayNetworking.send(GetDatapacksPacket)
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        renderBackground(context)
-
         context.drawCenteredTextWithShadow(
             textRenderer,
             Text.translatable("gui.datapacktools.datapack_selection.screen_title"),
@@ -84,25 +85,19 @@ class DatapackSelectionScreen(val parent: Screen? = null) : Screen(Text.translat
     }
 
     override fun close() {
-        ClientPlayNetworking.unregisterGlobalReceiver(ClientPackets.GET_DATAPACKS_PACKET)
+        ClientPlayNetworking.unregisterGlobalReceiver(SendDatapacksPacket.ID.id)
         super.close()
     }
 
     private fun registerPacketHandlers() {
-        ClientPlayNetworking.registerGlobalReceiver(ClientPackets.GET_DATAPACKS_PACKET) { client, handler, buf, responseSender ->
-            val datapacksCount = buf.readInt()
-            val datapacks = mutableListOf<String>()
-            repeat(datapacksCount) {
-                datapacks.add(buf.readString())
-            }
-
-            client.execute {
-                availableDatapacks = datapacks
+        ClientPlayNetworking.registerGlobalReceiver(SendDatapacksPacket.ID) { packet, context ->
+            context.client().execute {
+                availableDatapacks = packet.datapacks
                 updateDatapackButtons()
             }
         }
-        ClientPlayNetworking.registerGlobalReceiver(ClientPackets.GET_CURRENT_PACKET) { client, handler, buf, responseSender ->
-            current = buf.readString()
+        ClientPlayNetworking.registerGlobalReceiver(SendCurrentPacket.ID) { packet, context ->
+            current = packet.current
         }
     }
 

@@ -1,5 +1,6 @@
 package com.pulse.datapacktools.client.keybindings
 
+import com.pulse.datapacktools.client.DatapackToolsClient.Companion.MOD_KEYBINDING_CATEGORY
 import com.pulse.datapacktools.client.screen.ExportFunctionScreen
 import com.pulse.datapacktools.client.util.PlayerUtil.getCommandBlockInFront
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
@@ -18,7 +19,7 @@ object ExportKeybinding {
                 "key.datapacktools.export_key",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_F10,
-                "category.datapacktools"
+                MOD_KEYBINDING_CATEGORY
             )
         )
 

@@ -1,6 +1,8 @@
 package com.pulse.datapacktools.client.screen
 
-import com.pulse.datapacktools.client.packets.ClientPackets
+import com.pulse.datapacktools.packets.ConvertPacket
+import com.pulse.datapacktools.packets.GetCurrentPacket
+import com.pulse.datapacktools.packets.SendCurrentPacket
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
@@ -37,23 +39,24 @@ class ExportFunctionScreen() : Screen(Text.translatable("gui.datapacktools.expor
         functionNameField.setMaxLength(16)
         functionNameField.text = lastFunctionName
 
-        changeCommandCheckBox = CheckboxWidget(
-            width / 2 - 100,
-            height / 2 + 10,
-            200,
-            20,
+        changeCommandCheckBox = CheckboxWidget.builder(
             Text.translatable("gui.datapacktools.export.replace_checkmark"),
-            lastChangeCommandCheckbox
+            textRenderer,
         )
-        changeCommandCheckBox.tooltip = Tooltip.of(
+            .checked(lastChangeCommandCheckbox)
+            .pos(width / 2 - 100, height / 2 + 10)
+            .maxWidth(200)
+            .build()
+
+        changeCommandCheckBox.setTooltip(Tooltip.of(
             Text.translatable("gui.datapacktools.export.replace_checkmark.description")
-        )
+        ))
 
         exportButton = ButtonWidget.builder(Text.translatable("gui.datapacktools.export.export_button")) {
             val functionName = functionNameField.text
             if (functionName.isNotBlank()) {
                 close()
-                ClientPackets.sendConvertPacket(functionNameField.text, changeCommandCheckBox.isChecked)
+                ClientPlayNetworking.send(ConvertPacket(functionNameField.text, changeCommandCheckBox.isChecked))
             }
         }.dimensions(width / 2 - 100, height / 2 + 40, 95, 20).build()
         exportButton.active = false
@@ -65,7 +68,7 @@ class ExportFunctionScreen() : Screen(Text.translatable("gui.datapacktools.expor
         selectAnotherButton = ButtonWidget.builder(Text.translatable("gui.datapacktools.export.select_another_button")) {
             lastFunctionName = functionNameField.text
             lastChangeCommandCheckbox = changeCommandCheckBox.isChecked
-            ClientPlayNetworking.unregisterGlobalReceiver(ClientPackets.GET_CURRENT_PACKET)
+            ClientPlayNetworking.unregisterGlobalReceiver(GetCurrentPacket.ID.id)
             client?.setScreen(DatapackSelectionScreen(this))
         }.dimensions(width / 2 - 100, height / 2 + 90, 200, 20).build()
 
@@ -76,12 +79,10 @@ class ExportFunctionScreen() : Screen(Text.translatable("gui.datapacktools.expor
         addDrawableChild(selectAnotherButton)
 
         registerPacketHandlers()
-        ClientPackets.sendGetCurrentPacket()
+        ClientPlayNetworking.send(GetCurrentPacket)
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        renderBackground(context)
-
         context.drawCenteredTextWithShadow(
             textRenderer,
             Text.translatable("gui.datapacktools.export.screen_title"),
@@ -117,13 +118,13 @@ class ExportFunctionScreen() : Screen(Text.translatable("gui.datapacktools.expor
     override fun close() {
         lastFunctionName = functionNameField.text
         lastChangeCommandCheckbox = changeCommandCheckBox.isChecked
-        ClientPlayNetworking.unregisterGlobalReceiver(ClientPackets.GET_CURRENT_PACKET)
+        ClientPlayNetworking.unregisterGlobalReceiver(GetCurrentPacket.ID.id)
         super.close()
     }
 
     private fun registerPacketHandlers() {
-        ClientPlayNetworking.registerGlobalReceiver(ClientPackets.GET_CURRENT_PACKET) { client, handler, buf, responseSender ->
-            current = buf.readString()
+        ClientPlayNetworking.registerGlobalReceiver(SendCurrentPacket.ID) { packet, context ->
+            current = packet.current
         }
     }
 }

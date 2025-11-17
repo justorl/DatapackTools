@@ -5,6 +5,7 @@ import com.pulse.datapacktools.client.keybindings.ExportKeybinding;
 import com.pulse.datapacktools.client.screen.ExportFunctionScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.AbstractCommandBlockScreen;
+import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
@@ -28,14 +29,14 @@ public abstract class AbstractCommandBlockScreenMixin extends Screen {
                 this.width / 2 + 4 + 150 + 4,
                 this.height / 4 + 120 + 12,
                 20, 20,
-                new Identifier("datapacktools", "textures/gui/export_button.png"),
+                Identifier.of("datapacktools", "textures/gui/export_button.png"),
                 b -> client.setScreen(new ExportFunctionScreen())
         ));
     }
 
     @Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
-    private void onKeyPressed(int keyCode, int scanCode, int modifiers, CallbackInfoReturnable<Boolean> cir) {
-        if (ExportKeybinding.exportKey.matchesKey(keyCode, scanCode)) {
+    private void onKeyPressed(KeyInput input, CallbackInfoReturnable<Boolean> cir) {
+        if (ExportKeybinding.exportKey.matchesKey(input)) {
             if (client != null) {
                 client.setScreen(new ExportFunctionScreen());
                 cir.setReturnValue(true);

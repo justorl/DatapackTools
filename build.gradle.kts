@@ -33,8 +33,7 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}")
 
     modCompileOnly("com.github.Tectato:BetterCommandBlockUI:1.20-SNAPSHOT")
-    modImplementation(include("xyz.meowing:vexel-1.20.1-fabric:121")!!)
-    modImplementation(include("xyz.meowing:knit-1.20.1-fabric:117")!!)
+    modImplementation(include("xyz.meowing:vexel-1.21.9-fabric:124")!!)
 }
 
 tasks {
@@ -72,7 +71,7 @@ tasks {
 
     compileKotlin {
         compilerOptions {
-            jvmTarget = JvmTarget.JVM_17
+            jvmTarget = JvmTarget.JVM_21
 
         }
     }
@@ -83,7 +82,7 @@ java {
     // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
     // if it is present.
     // If you remove this line, sources will not be generated.
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
     withSourcesJar()
 }
 

@@ -17,7 +17,7 @@ object ExtensionsUtil {
         val lookVec: Vec3d = this.getRotationVec(1.0f)
         val reachVec: Vec3d = eyePos.add(lookVec.multiply(10.0))
 
-        val rayResult: BlockHitResult = this.world.raycast(
+        val rayResult: BlockHitResult = this.entityWorld.raycast(
             RaycastContext(
                 eyePos,
                 reachVec,

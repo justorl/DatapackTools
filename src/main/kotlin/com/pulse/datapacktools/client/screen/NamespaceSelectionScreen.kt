@@ -1,6 +1,8 @@
 package com.pulse.datapacktools.client.screen
 
-import com.pulse.datapacktools.client.packets.ClientPackets
+import com.pulse.datapacktools.packets.GetNamespacesPacket
+import com.pulse.datapacktools.packets.SendNamespacesPacket
+import com.pulse.datapacktools.packets.SetDatapackPacket
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
@@ -23,8 +25,8 @@ class NamespaceSelectionScreen(val datapackName: String, val parent: Screen? = n
             val btn = ButtonWidget.builder(Text.literal("")) {
                 val name = availableNamespaces.getOrNull(i)
                 if (!name.isNullOrBlank()) {
-                    ClientPackets.sendSetDatapackPacket(datapackName, name)
-                    ClientPlayNetworking.unregisterGlobalReceiver(ClientPackets.GET_NAMESPACES_PACKET)
+                    ClientPlayNetworking.send(SetDatapackPacket(datapackName, name))
+                    ClientPlayNetworking.unregisterGlobalReceiver(GetNamespacesPacket.ID.id)
                     client?.setScreen(parent)
                 }
             }.dimensions(width / 2 - 100, height / 2 - 40 + i * 22, 200, 20).build()
@@ -39,12 +41,10 @@ class NamespaceSelectionScreen(val datapackName: String, val parent: Screen? = n
         addDrawableChild(cancelButton)
 
         registerPacketHandlers()
-        ClientPackets.sendGetNamespacesPacket(datapackName)
+        ClientPlayNetworking.send(GetNamespacesPacket(datapackName))
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        renderBackground(context)
-
         context.drawCenteredTextWithShadow(
             textRenderer,
             Text.translatable("gui.datapacktools.namespace_selection.screen_title"),
@@ -75,20 +75,14 @@ class NamespaceSelectionScreen(val datapackName: String, val parent: Screen? = n
     }
 
     override fun close() {
-        ClientPlayNetworking.unregisterGlobalReceiver(ClientPackets.GET_NAMESPACES_PACKET)
+        ClientPlayNetworking.unregisterGlobalReceiver(GetNamespacesPacket.ID.id)
         super.close()
     }
 
     private fun registerPacketHandlers() {
-        ClientPlayNetworking.registerGlobalReceiver(ClientPackets.GET_NAMESPACES_PACKET) { client, handler, buf, responseSender ->
-            val namespacesCount = buf.readInt()
-            val namespaces = mutableListOf<String>()
-            repeat(namespacesCount) {
-                namespaces.add(buf.readString())
-            }
-
-            client.execute {
-                availableNamespaces = namespaces
+        ClientPlayNetworking.registerGlobalReceiver(SendNamespacesPacket.ID) { packet, context ->
+            context.client().execute {
+                availableNamespaces = packet.namespaces
                 updateNamespaceButtons()
             }
         }

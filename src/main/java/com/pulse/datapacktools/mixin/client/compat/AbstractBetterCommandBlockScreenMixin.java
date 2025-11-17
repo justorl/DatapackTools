@@ -5,6 +5,7 @@ import com.pulse.datapacktools.client.buttons.IconButtonWidget;
 import com.pulse.datapacktools.client.keybindings.ExportKeybinding;
 import com.pulse.datapacktools.client.screen.ExportFunctionScreen;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
@@ -28,14 +29,14 @@ public abstract class AbstractBetterCommandBlockScreenMixin extends Screen {
                 this.width - (10 + 20),
                 this.height - (10 + 20 + 30),
                 20, 20,
-                new Identifier("datapacktools", "textures/gui/export_button.png"),
+                Identifier.of("datapacktools", "textures/gui/export_button.png"),
                 b -> client.setScreen(new ExportFunctionScreen())
         ));
     }
 
-    @Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "method_25404", at = @At("HEAD"), cancellable = true)
     private void onKeyPressed(int keyCode, int scanCode, int modifiers, CallbackInfoReturnable<Boolean> cir) {
-        if (ExportKeybinding.exportKey.matchesKey(keyCode, scanCode)) {
+        if (ExportKeybinding.exportKey.matchesKey(new KeyInput(keyCode, scanCode, modifiers))) {
             if (client != null) {
                 client.setScreen(new ExportFunctionScreen());
                 cir.setReturnValue(true);

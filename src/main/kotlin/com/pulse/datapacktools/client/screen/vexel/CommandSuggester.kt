@@ -5,7 +5,7 @@ import com.mojang.brigadier.StringReader
 import com.mojang.brigadier.suggestion.Suggestion
 import com.mojang.brigadier.suggestion.Suggestions
 import net.minecraft.client.MinecraftClient
-import net.minecraft.command.CommandSource
+import net.minecraft.client.network.ClientCommandSource
 import net.minecraft.util.math.MathHelper
 import org.lwjgl.glfw.GLFW
 import xyz.meowing.vexel.components.base.Pos
@@ -27,7 +27,8 @@ class CommandSuggester(
 ) : VexelElement<CommandSuggester>(Size.Pixels, Size.Pixels) {
 
     private var pendingSuggestions: CompletableFuture<Suggestions>? = null
-    private var parse: ParseResults<CommandSource>? = null
+    private var parse: ParseResults<ClientCommandSource>? = null
+
     private var suggestions: List<Suggestion> = emptyList()
     private var selectedIndex = 0
     private var scrollOffset = 0

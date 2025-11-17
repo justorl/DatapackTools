@@ -1,35 +1,28 @@
-package com.pulse.datapacktools.main.packets
+package com.pulse.datapacktools.main.packets.custom
 
 import com.pulse.datapacktools.main.config.ModConfig
-import com.pulse.datapacktools.main.utils.DatapacksUtils.createDefaultDatapack
-import com.pulse.datapacktools.main.utils.DatapacksUtils.updateDatapack
+import com.pulse.datapacktools.main.utils.DatapacksUtils
 import com.pulse.datapacktools.main.utils.ExtensionsUtil.getCommandChain
 import com.pulse.datapacktools.main.utils.ExtensionsUtil.getTargetBlock
 import com.pulse.datapacktools.main.utils.SessionUtils
+import com.pulse.datapacktools.packets.ConvertPacket
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.block.Blocks
 import net.minecraft.block.entity.CommandBlockBlockEntity
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
-import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import java.io.File
 
-object ConvertPacket {
-    val ID = Identifier("datapacktools", "convert_commands")
-
+object ServerConvertPacket {
     fun register() {
-        ServerPlayNetworking.registerGlobalReceiver(ID) { server, player, handler, buf, responseSender ->
-            val functionName = buf.readString().removeSuffix("/")
-            val changeCommand = buf.readBoolean()
+        PayloadTypeRegistry.playC2S().register(ConvertPacket.ID, ConvertPacket.CODEC);
 
-            if (player.hasPermissionLevel(ModConfig.data.modPermissionLevel)) {
-                server.execute {
-                    handle(player, functionName, changeCommand)
-                }
-            } else {
-                player.sendMessage(Text.translatable("message.datapacktool.convert.fail.no_permission").formatted(Formatting.RED))
+        ServerPlayNetworking.registerGlobalReceiver(ConvertPacket.Companion.ID) { packet, context ->
+            context.server().execute {
+                handle( context.player(), packet.functionName, packet.changeCommand)
             }
         }
     }
@@ -42,11 +35,14 @@ object ConvertPacket {
         player.sendMessage(Text.translatable("message.datapacktools.convert.start").formatted(Formatting.GRAY, Formatting.ITALIC))
 
         val worldDir: File = SessionUtils.worldFolderPath?.toFile() ?: return
-        createDefaultDatapack(worldDir)
+        DatapacksUtils.createDefaultDatapack(worldDir)
 
         val commandList = mutableListOf<String>()
 
-        val functionsDir = File(worldDir, "datapacks/${ModConfig.data.datapackName}/data/${ModConfig.data.datapackNamespace}/functions")
+        val functionsDir = File(
+            worldDir,
+            "datapacks/${ModConfig.data.datapackName}/data/${ModConfig.data.datapackNamespace}/functions"
+        )
         val functionDir = File(functionsDir, functionName.substringBeforeLast('/'))
         val functionFile = File(functionsDir, "${functionName}.mcfunction")
 
@@ -54,13 +50,15 @@ object ConvertPacket {
             if (ModConfig.data.enableWritingInExistingFunctions) {
                 functionFile.readLines().forEach { commandList.add(it) }
             } else {
-                player.sendMessage(Text.translatable("message.datapacktools.convert.fail.already_exists").formatted(Formatting.RED))
+                player.sendMessage(
+                    Text.translatable("message.datapacktools.convert.fail.already_exists").formatted(
+                        Formatting.RED))
                 return
             }
         }
 
         val pos: BlockPos = player.getTargetBlock()?.blockPos ?: return
-        val block = player.world.getBlockEntity(pos)
+        val block = player.entityWorld.getBlockEntity(pos)
 
         if (block is CommandBlockBlockEntity) {
             commandList.add(block.commandExecutor.command.removePrefix("/"))
@@ -79,7 +77,7 @@ object ConvertPacket {
         if (!functionDir.exists() && functionName.contains("/")) functionDir.mkdirs()
         functionFile.writeText(commandList.joinToString("\n"))
 
-        updateDatapack(player)
+        DatapacksUtils.updateDatapack(player)
 
         player.sendMessage(Text.translatable("message.datapacktools.convert.done", "${ModConfig.data.datapackName}:$functionName"), false)
     }

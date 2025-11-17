@@ -11,8 +11,10 @@ import java.nio.file.Path
 
 class DatapackTools : ModInitializer {
 
+    companion object {const val ID = "datapacktools"}
+
     override fun onInitialize() {
-        ServerPackets.registerAll()
+        ServerPackets.register()
         ModConfig.load()
 
         ServerLifecycleEvents.SERVER_STARTING.register(ServerLifecycleEvents.ServerStarting { server: MinecraftServer? ->

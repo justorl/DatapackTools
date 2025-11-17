@@ -1,5 +1,6 @@
 package com.pulse.datapacktools.client.keybindings
 
+import com.pulse.datapacktools.client.DatapackToolsClient.Companion.MOD_KEYBINDING_CATEGORY
 import com.pulse.datapacktools.client.screen.vexel.DatapackEditorScreen
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
@@ -17,7 +18,7 @@ object DatapackEditorKeybinding {
                 "key.datapacktools.editor_key",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_RIGHT_ALT,
-                "category.datapacktools"
+                MOD_KEYBINDING_CATEGORY
             )
         )
 
