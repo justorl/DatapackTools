@@ -1,20 +1,17 @@
-package com.pulse.datapacktools.main.packets.custom
+package com.pulse.datapacktools.main.packets
 
 import com.pulse.datapacktools.main.config.ModConfig
 import com.pulse.datapacktools.main.utils.DatapacksUtils.createDefaultDatapack
 import com.pulse.datapacktools.main.utils.DatapacksUtils.updateDatapack
 import com.pulse.datapacktools.main.utils.SessionUtils
-import com.pulse.datapacktools.packets.CreateFunctionPacket
-import com.pulse.datapacktools.packets.FunctionCreatedPacket
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
+import com.pulse.datapacktools.packets.custom.CreateFunctionPacket
+import com.pulse.datapacktools.packets.custom.FunctionCreatedPacket
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.server.network.ServerPlayerEntity
 import java.io.File
 
 object ServerCreateFunctionPacket {
     fun register() {
-        PayloadTypeRegistry.playC2S().register(CreateFunctionPacket.ID, CreateFunctionPacket.CODEC);
-
         ServerPlayNetworking.registerGlobalReceiver(CreateFunctionPacket.ID) { packet, context ->
             context.server().execute {
                 handle(context.player(), packet.functionName)

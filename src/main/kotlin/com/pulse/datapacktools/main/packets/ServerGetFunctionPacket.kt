@@ -1,18 +1,15 @@
-package com.pulse.datapacktools.main.packets.custom
+package com.pulse.datapacktools.main.packets
 
 import com.pulse.datapacktools.main.config.ModConfig
 import com.pulse.datapacktools.main.utils.SessionUtils
-import com.pulse.datapacktools.packets.GetFunctionPacket
-import com.pulse.datapacktools.packets.SendFunctionPacket
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
+import com.pulse.datapacktools.packets.custom.GetFunctionPacket
+import com.pulse.datapacktools.packets.custom.SendFunctionPacket
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.server.network.ServerPlayerEntity
 import java.io.File
 
 object ServerGetFunctionPacket {
     fun register() {
-        PayloadTypeRegistry.playC2S().register(GetFunctionPacket.ID, GetFunctionPacket.CODEC);
-
         ServerPlayNetworking.registerGlobalReceiver(GetFunctionPacket.ID) { packet, context ->
             if (context.player().hasPermissionLevel(ModConfig.data.modPermissionLevel)) {
                 context.server().execute {

@@ -1,12 +1,11 @@
-package com.pulse.datapacktools.main.packets.custom
+package com.pulse.datapacktools.main.packets
 
 import com.pulse.datapacktools.main.config.ModConfig
 import com.pulse.datapacktools.main.utils.DatapacksUtils
 import com.pulse.datapacktools.main.utils.ExtensionsUtil.getCommandChain
 import com.pulse.datapacktools.main.utils.ExtensionsUtil.getTargetBlock
 import com.pulse.datapacktools.main.utils.SessionUtils
-import com.pulse.datapacktools.packets.ConvertPacket
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
+import com.pulse.datapacktools.packets.custom.ConvertPacket
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.block.Blocks
 import net.minecraft.block.entity.CommandBlockBlockEntity
@@ -18,8 +17,6 @@ import java.io.File
 
 object ServerConvertPacket {
     fun register() {
-        PayloadTypeRegistry.playC2S().register(ConvertPacket.ID, ConvertPacket.CODEC);
-
         ServerPlayNetworking.registerGlobalReceiver(ConvertPacket.Companion.ID) { packet, context ->
             context.server().execute {
                 handle( context.player(), packet.functionName, packet.changeCommand)

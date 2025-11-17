@@ -1,9 +1,9 @@
 package com.pulse.datapacktools.client.screen
 
-import com.pulse.datapacktools.packets.GetDatapacksPacket
-import com.pulse.datapacktools.packets.SendCurrentPacket
-import com.pulse.datapacktools.packets.SendDatapacksPacket
-import com.pulse.datapacktools.packets.SendNamespacesPacket
+import com.pulse.datapacktools.packets.custom.GetDatapacksPacket
+import com.pulse.datapacktools.packets.custom.SendCurrentPacket
+import com.pulse.datapacktools.packets.custom.SendDatapacksPacket
+import com.pulse.datapacktools.packets.custom.SendNamespacesPacket
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
@@ -28,7 +28,7 @@ class DatapackSelectionScreen(val parent: Screen? = null) : Screen(Text.translat
             val btn = ButtonWidget.builder(Text.literal("")) {
                 val name = availableDatapacks.getOrNull(i)
                 if (!name.isNullOrBlank()) {
-                    ClientPlayNetworking.unregisterReceiver(SendNamespacesPacket.ID.id)
+                    ClientPlayNetworking.unregisterGlobalReceiver(SendNamespacesPacket.ID.id)
                     client?.setScreen(NamespaceSelectionScreen(name, parent))
                 }
             }.dimensions(width / 2 - 100, height / 2 - 40 + i * 22, 200, 20).build()
@@ -85,18 +85,18 @@ class DatapackSelectionScreen(val parent: Screen? = null) : Screen(Text.translat
     }
 
     override fun close() {
-        ClientPlayNetworking.unregisterReceiver(SendDatapacksPacket.ID.id)
+        ClientPlayNetworking.unregisterGlobalReceiver(SendDatapacksPacket.ID.id)
         super.close()
     }
 
     private fun registerPacketHandlers() {
-        ClientPlayNetworking.registerReceiver(SendDatapacksPacket.ID) { packet, context ->
+        ClientPlayNetworking.registerGlobalReceiver(SendDatapacksPacket.ID) { packet, context ->
             context.client().execute {
                 availableDatapacks = packet.datapacks
                 updateDatapackButtons()
             }
         }
-        ClientPlayNetworking.registerReceiver(SendCurrentPacket.ID) { packet, context ->
+        ClientPlayNetworking.registerGlobalReceiver(SendCurrentPacket.ID) { packet, context ->
             current = packet.current
         }
     }

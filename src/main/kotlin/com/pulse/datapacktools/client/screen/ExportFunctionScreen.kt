@@ -1,8 +1,8 @@
 package com.pulse.datapacktools.client.screen
 
-import com.pulse.datapacktools.packets.ConvertPacket
-import com.pulse.datapacktools.packets.GetCurrentPacket
-import com.pulse.datapacktools.packets.SendCurrentPacket
+import com.pulse.datapacktools.packets.custom.ConvertPacket
+import com.pulse.datapacktools.packets.custom.GetCurrentPacket
+import com.pulse.datapacktools.packets.custom.SendCurrentPacket
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
@@ -68,7 +68,7 @@ class ExportFunctionScreen() : Screen(Text.translatable("gui.datapacktools.expor
         selectAnotherButton = ButtonWidget.builder(Text.translatable("gui.datapacktools.export.select_another_button")) {
             lastFunctionName = functionNameField.text
             lastChangeCommandCheckbox = changeCommandCheckBox.isChecked
-            ClientPlayNetworking.unregisterReceiver(GetCurrentPacket.ID.id)
+            ClientPlayNetworking.unregisterGlobalReceiver(GetCurrentPacket.ID.id)
             client?.setScreen(DatapackSelectionScreen(this))
         }.dimensions(width / 2 - 100, height / 2 + 90, 200, 20).build()
 
@@ -118,12 +118,12 @@ class ExportFunctionScreen() : Screen(Text.translatable("gui.datapacktools.expor
     override fun close() {
         lastFunctionName = functionNameField.text
         lastChangeCommandCheckbox = changeCommandCheckBox.isChecked
-        ClientPlayNetworking.unregisterReceiver(GetCurrentPacket.ID.id)
+        ClientPlayNetworking.unregisterGlobalReceiver(GetCurrentPacket.ID.id)
         super.close()
     }
 
     private fun registerPacketHandlers() {
-        ClientPlayNetworking.registerReceiver(SendCurrentPacket.ID) { packet, context ->
+        ClientPlayNetworking.registerGlobalReceiver(SendCurrentPacket.ID) { packet, context ->
             current = packet.current
         }
     }

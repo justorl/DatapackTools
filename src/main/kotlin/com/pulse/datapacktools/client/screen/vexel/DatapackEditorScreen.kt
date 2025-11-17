@@ -1,10 +1,10 @@
 package com.pulse.datapacktools.client.screen.vexel
 
-import com.pulse.datapacktools.packets.CreateFunctionPacket
-import com.pulse.datapacktools.packets.FunctionCreatedPacket
-import com.pulse.datapacktools.packets.GetFunctionsPacket
-import com.pulse.datapacktools.packets.SendFunctionPacket
-import com.pulse.datapacktools.packets.SendFunctionsPacket
+import com.pulse.datapacktools.packets.custom.CreateFunctionPacket
+import com.pulse.datapacktools.packets.custom.FunctionCreatedPacket
+import com.pulse.datapacktools.packets.custom.GetFunctionsPacket
+import com.pulse.datapacktools.packets.custom.SendFunctionPacket
+import com.pulse.datapacktools.packets.custom.SendFunctionsPacket
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import xyz.meowing.vexel.components.base.Pos
 import xyz.meowing.vexel.components.base.Size
@@ -196,7 +196,7 @@ class DatapackEditorScreen : VexelScreen() {
 
 
     private fun registerPacketHandlers() {
-        ClientPlayNetworking.registerReceiver(SendFunctionsPacket.ID) { packet, context ->
+        ClientPlayNetworking.registerGlobalReceiver(SendFunctionsPacket.ID) { packet, context ->
             context.client().execute {
                 functions = packet.functions
                 renderFunctionTree()
@@ -204,13 +204,13 @@ class DatapackEditorScreen : VexelScreen() {
             }
         }
         
-        ClientPlayNetworking.registerReceiver(FunctionCreatedPacket.ID) { packet, context ->
+        ClientPlayNetworking.registerGlobalReceiver(FunctionCreatedPacket.ID) { packet, context ->
             context.client().execute {
                 ClientPlayNetworking.send(GetFunctionsPacket)
             }
         }
         
-        ClientPlayNetworking.registerReceiver(SendFunctionPacket.ID) { packet, context ->
+        ClientPlayNetworking.registerGlobalReceiver(SendFunctionPacket.ID) { packet, context ->
             context.client().execute {
                 codeEditor.value = packet.content
                 codeEditor.isLoaded = true
@@ -327,9 +327,9 @@ class DatapackEditorScreen : VexelScreen() {
     }
 
     override fun onCloseGui() {
-        ClientPlayNetworking.unregisterReceiver(SendFunctionsPacket.ID.id)
-        ClientPlayNetworking.unregisterReceiver(FunctionCreatedPacket.ID.id)
-        ClientPlayNetworking.unregisterReceiver(GetFunctionsPacket.ID.id)
+        ClientPlayNetworking.unregisterGlobalReceiver(SendFunctionsPacket.ID.id)
+        ClientPlayNetworking.unregisterGlobalReceiver(FunctionCreatedPacket.ID.id)
+        ClientPlayNetworking.unregisterGlobalReceiver(GetFunctionsPacket.ID.id)
         super.onCloseGui()
     }
 }

@@ -1,8 +1,8 @@
 package com.pulse.datapacktools.client.screen
 
-import com.pulse.datapacktools.packets.GetNamespacesPacket
-import com.pulse.datapacktools.packets.SendNamespacesPacket
-import com.pulse.datapacktools.packets.SetDatapackPacket
+import com.pulse.datapacktools.packets.custom.GetNamespacesPacket
+import com.pulse.datapacktools.packets.custom.SendNamespacesPacket
+import com.pulse.datapacktools.packets.custom.SetDatapackPacket
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
@@ -26,7 +26,7 @@ class NamespaceSelectionScreen(val datapackName: String, val parent: Screen? = n
                 val name = availableNamespaces.getOrNull(i)
                 if (!name.isNullOrBlank()) {
                     ClientPlayNetworking.send(SetDatapackPacket(datapackName, name))
-                    ClientPlayNetworking.unregisterReceiver(GetNamespacesPacket.ID.id)
+                    ClientPlayNetworking.unregisterGlobalReceiver(GetNamespacesPacket.ID.id)
                     client?.setScreen(parent)
                 }
             }.dimensions(width / 2 - 100, height / 2 - 40 + i * 22, 200, 20).build()
@@ -75,12 +75,12 @@ class NamespaceSelectionScreen(val datapackName: String, val parent: Screen? = n
     }
 
     override fun close() {
-        ClientPlayNetworking.unregisterReceiver(GetNamespacesPacket.ID.id)
+        ClientPlayNetworking.unregisterGlobalReceiver(GetNamespacesPacket.ID.id)
         super.close()
     }
 
     private fun registerPacketHandlers() {
-        ClientPlayNetworking.registerReceiver(SendNamespacesPacket.ID) { packet, context ->
+        ClientPlayNetworking.registerGlobalReceiver(SendNamespacesPacket.ID) { packet, context ->
             context.client().execute {
                 availableNamespaces = packet.namespaces
                 updateNamespaceButtons()

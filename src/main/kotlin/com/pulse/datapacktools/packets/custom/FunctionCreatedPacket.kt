@@ -1,4 +1,4 @@
-package com.pulse.datapacktools.packets
+package com.pulse.datapacktools.packets.custom
 
 import com.pulse.datapacktools.main.DatapackTools
 import net.minecraft.network.RegistryByteBuf

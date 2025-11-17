@@ -1,7 +1,7 @@
 package com.pulse.datapacktools.client.screen.vexel
 
-import com.pulse.datapacktools.packets.GetFunctionPacket
-import com.pulse.datapacktools.packets.SaveFunctionPacket
+import com.pulse.datapacktools.packets.custom.GetFunctionPacket
+import com.pulse.datapacktools.packets.custom.SaveFunctionPacket
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.client.MinecraftClient
 import org.lwjgl.glfw.GLFW

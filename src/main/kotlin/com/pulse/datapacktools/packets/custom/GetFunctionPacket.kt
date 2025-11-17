@@ -1,4 +1,4 @@
-package com.pulse.datapacktools.packets
+package com.pulse.datapacktools.packets.custom
 
 import com.pulse.datapacktools.main.DatapackTools
 import net.minecraft.network.RegistryByteBuf
@@ -7,13 +7,13 @@ import net.minecraft.network.codec.PacketCodecs
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.util.Identifier
 
-data class SendCurrentPacket(val current: String) : CustomPayload {
+data class GetFunctionPacket(val functionName: String) : CustomPayload {
     companion object {
-        val ID = CustomPayload.Id<SendCurrentPacket>(Identifier.of(DatapackTools.ID, "send_current"))
-        val CODEC: PacketCodec<RegistryByteBuf, SendCurrentPacket> = PacketCodec.tuple(
+        val ID = CustomPayload.Id<GetFunctionPacket>(Identifier.of(DatapackTools.ID, "get_function"))
+        val CODEC: PacketCodec<RegistryByteBuf, GetFunctionPacket> = PacketCodec.tuple(
             PacketCodecs.STRING,
-            SendCurrentPacket::current,
-            ::SendCurrentPacket
+            GetFunctionPacket::functionName,
+            ::GetFunctionPacket
         )
     }
 

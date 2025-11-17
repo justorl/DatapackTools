@@ -1,18 +1,15 @@
-package com.pulse.datapacktools.main.packets.custom
+package com.pulse.datapacktools.main.packets
 
 import com.pulse.datapacktools.main.config.ModConfig
 import com.pulse.datapacktools.main.utils.SessionUtils
-import com.pulse.datapacktools.packets.GetNamespacesPacket
-import com.pulse.datapacktools.packets.SendNamespacesPacket
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
+import com.pulse.datapacktools.packets.custom.GetNamespacesPacket
+import com.pulse.datapacktools.packets.custom.SendNamespacesPacket
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.server.network.ServerPlayerEntity
 import java.io.File
 
 object ServerGetNamespacesPacket {
     fun register() {
-        PayloadTypeRegistry.playC2S().register(GetNamespacesPacket.ID, GetNamespacesPacket.CODEC);
-
         ServerPlayNetworking.registerGlobalReceiver(GetNamespacesPacket.ID) { packet, context ->
             if (context.player().hasPermissionLevel(ModConfig.data.modPermissionLevel)) {
                 context.server().execute {

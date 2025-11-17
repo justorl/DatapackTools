@@ -1,16 +1,13 @@
-package com.pulse.datapacktools.main.packets.custom
+package com.pulse.datapacktools.main.packets
 
 import com.pulse.datapacktools.main.config.ModConfig
-import com.pulse.datapacktools.packets.SetDatapackPacket
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
+import com.pulse.datapacktools.packets.custom.SetDatapackPacket
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 
 object ServerSetDatapackPacket {
     fun register() {
-        PayloadTypeRegistry.playC2S().register(SetDatapackPacket.ID, SetDatapackPacket.CODEC);
-
         ServerPlayNetworking.registerGlobalReceiver(SetDatapackPacket.ID) { packet, context ->
             if (context.player().hasPermissionLevel(ModConfig.data.modPermissionLevel)) {
                 context.server().execute {
