@@ -27,7 +27,7 @@ object ServerGetFunctionsPacket {
         val worldDir: File = SessionUtils.worldFolderPath?.toFile() ?: return
 
         createDefaultDatapack(worldDir)
-        val functionsDir = File(worldDir, "datapacks/${ModConfig.data.datapackName}/data/${ModConfig.data.datapackNamespace}/functions")
+        val functionsDir = File(worldDir, "datapacks/${ModConfig.data.datapackName}/data/${ModConfig.data.datapackNamespace}/function")
         
         if (!functionsDir.exists()) functionsDir.mkdirs()
 

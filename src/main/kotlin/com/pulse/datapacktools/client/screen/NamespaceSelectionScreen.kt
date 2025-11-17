@@ -26,7 +26,7 @@ class NamespaceSelectionScreen(val datapackName: String, val parent: Screen? = n
                 val name = availableNamespaces.getOrNull(i)
                 if (!name.isNullOrBlank()) {
                     ClientPlayNetworking.send(SetDatapackPacket(datapackName, name))
-                    ClientPlayNetworking.unregisterGlobalReceiver(GetNamespacesPacket.ID.id)
+                    ClientPlayNetworking.unregisterReceiver(GetNamespacesPacket.ID.id)
                     client?.setScreen(parent)
                 }
             }.dimensions(width / 2 - 100, height / 2 - 40 + i * 22, 200, 20).build()
@@ -75,12 +75,12 @@ class NamespaceSelectionScreen(val datapackName: String, val parent: Screen? = n
     }
 
     override fun close() {
-        ClientPlayNetworking.unregisterGlobalReceiver(GetNamespacesPacket.ID.id)
+        ClientPlayNetworking.unregisterReceiver(GetNamespacesPacket.ID.id)
         super.close()
     }
 
     private fun registerPacketHandlers() {
-        ClientPlayNetworking.registerGlobalReceiver(SendNamespacesPacket.ID) { packet, context ->
+        ClientPlayNetworking.registerReceiver(SendNamespacesPacket.ID) { packet, context ->
             context.client().execute {
                 availableNamespaces = packet.namespaces
                 updateNamespaceButtons()

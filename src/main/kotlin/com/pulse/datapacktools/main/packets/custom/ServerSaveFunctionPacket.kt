@@ -27,7 +27,7 @@ object ServerSaveFunctionPacket {
         val worldDir: File = SessionUtils.worldFolderPath?.toFile() ?: return
         createDefaultDatapack(worldDir)
 
-        val functionsDir = File(worldDir, "datapacks/${ModConfig.data.datapackName}/data/${ModConfig.data.datapackNamespace}/functions")
+        val functionsDir = File(worldDir, "datapacks/${ModConfig.data.datapackName}/data/${ModConfig.data.datapackNamespace}/function")
         val functionFile = File(functionsDir, functionName)
         functionFile.writeText(content)
 

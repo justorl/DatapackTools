@@ -196,7 +196,7 @@ class DatapackEditorScreen : VexelScreen() {
 
 
     private fun registerPacketHandlers() {
-        ClientPlayNetworking.registerGlobalReceiver(SendFunctionsPacket.ID) { packet, context ->
+        ClientPlayNetworking.registerReceiver(SendFunctionsPacket.ID) { packet, context ->
             context.client().execute {
                 functions = packet.functions
                 renderFunctionTree()
@@ -204,19 +204,17 @@ class DatapackEditorScreen : VexelScreen() {
             }
         }
         
-        ClientPlayNetworking.registerGlobalReceiver(FunctionCreatedPacket.ID) { packet, context ->
+        ClientPlayNetworking.registerReceiver(FunctionCreatedPacket.ID) { packet, context ->
             context.client().execute {
                 ClientPlayNetworking.send(GetFunctionsPacket)
             }
         }
         
-        ClientPlayNetworking.registerGlobalReceiver(SendFunctionPacket.ID) { packet, context ->
+        ClientPlayNetworking.registerReceiver(SendFunctionPacket.ID) { packet, context ->
             context.client().execute {
-                if (packet.functionName == codeEditor.filePath) {
-                    codeEditor.value = packet.content
-                    codeEditor.isLoaded = true
-                    codeEditor.hasUnsavedChanges = false
-                }
+                codeEditor.value = packet.content
+                codeEditor.isLoaded = true
+                codeEditor.hasUnsavedChanges = false
             }
         }
     }
@@ -329,9 +327,9 @@ class DatapackEditorScreen : VexelScreen() {
     }
 
     override fun onCloseGui() {
-        ClientPlayNetworking.unregisterGlobalReceiver(SendFunctionsPacket.ID.id)
-        ClientPlayNetworking.unregisterGlobalReceiver(FunctionCreatedPacket.ID.id)
-        ClientPlayNetworking.unregisterGlobalReceiver(GetFunctionsPacket.ID.id)
+        ClientPlayNetworking.unregisterReceiver(SendFunctionsPacket.ID.id)
+        ClientPlayNetworking.unregisterReceiver(FunctionCreatedPacket.ID.id)
+        ClientPlayNetworking.unregisterReceiver(GetFunctionsPacket.ID.id)
         super.onCloseGui()
     }
 }

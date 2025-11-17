@@ -28,7 +28,7 @@ class DatapackSelectionScreen(val parent: Screen? = null) : Screen(Text.translat
             val btn = ButtonWidget.builder(Text.literal("")) {
                 val name = availableDatapacks.getOrNull(i)
                 if (!name.isNullOrBlank()) {
-                    ClientPlayNetworking.unregisterGlobalReceiver(SendNamespacesPacket.ID.id)
+                    ClientPlayNetworking.unregisterReceiver(SendNamespacesPacket.ID.id)
                     client?.setScreen(NamespaceSelectionScreen(name, parent))
                 }
             }.dimensions(width / 2 - 100, height / 2 - 40 + i * 22, 200, 20).build()
@@ -85,18 +85,18 @@ class DatapackSelectionScreen(val parent: Screen? = null) : Screen(Text.translat
     }
 
     override fun close() {
-        ClientPlayNetworking.unregisterGlobalReceiver(SendDatapacksPacket.ID.id)
+        ClientPlayNetworking.unregisterReceiver(SendDatapacksPacket.ID.id)
         super.close()
     }
 
     private fun registerPacketHandlers() {
-        ClientPlayNetworking.registerGlobalReceiver(SendDatapacksPacket.ID) { packet, context ->
+        ClientPlayNetworking.registerReceiver(SendDatapacksPacket.ID) { packet, context ->
             context.client().execute {
                 availableDatapacks = packet.datapacks
                 updateDatapackButtons()
             }
         }
-        ClientPlayNetworking.registerGlobalReceiver(SendCurrentPacket.ID) { packet, context ->
+        ClientPlayNetworking.registerReceiver(SendCurrentPacket.ID) { packet, context ->
             current = packet.current
         }
     }

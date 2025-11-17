@@ -41,7 +41,7 @@ object ServerConvertPacket {
 
         val functionsDir = File(
             worldDir,
-            "datapacks/${ModConfig.data.datapackName}/data/${ModConfig.data.datapackNamespace}/functions"
+            "datapacks/${ModConfig.data.datapackName}/data/${ModConfig.data.datapackNamespace}/function"
         )
         val functionDir = File(functionsDir, functionName.substringBeforeLast('/'))
         val functionFile = File(functionsDir, "${functionName}.mcfunction")

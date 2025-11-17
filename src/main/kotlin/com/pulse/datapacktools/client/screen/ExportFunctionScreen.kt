@@ -68,7 +68,7 @@ class ExportFunctionScreen() : Screen(Text.translatable("gui.datapacktools.expor
         selectAnotherButton = ButtonWidget.builder(Text.translatable("gui.datapacktools.export.select_another_button")) {
             lastFunctionName = functionNameField.text
             lastChangeCommandCheckbox = changeCommandCheckBox.isChecked
-            ClientPlayNetworking.unregisterGlobalReceiver(GetCurrentPacket.ID.id)
+            ClientPlayNetworking.unregisterReceiver(GetCurrentPacket.ID.id)
             client?.setScreen(DatapackSelectionScreen(this))
         }.dimensions(width / 2 - 100, height / 2 + 90, 200, 20).build()
 
@@ -118,12 +118,12 @@ class ExportFunctionScreen() : Screen(Text.translatable("gui.datapacktools.expor
     override fun close() {
         lastFunctionName = functionNameField.text
         lastChangeCommandCheckbox = changeCommandCheckBox.isChecked
-        ClientPlayNetworking.unregisterGlobalReceiver(GetCurrentPacket.ID.id)
+        ClientPlayNetworking.unregisterReceiver(GetCurrentPacket.ID.id)
         super.close()
     }
 
     private fun registerPacketHandlers() {
-        ClientPlayNetworking.registerGlobalReceiver(SendCurrentPacket.ID) { packet, context ->
+        ClientPlayNetworking.registerReceiver(SendCurrentPacket.ID) { packet, context ->
             current = packet.current
         }
     }
