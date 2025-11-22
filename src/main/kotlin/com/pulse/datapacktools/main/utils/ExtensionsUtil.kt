@@ -37,6 +37,7 @@ object ExtensionsUtil {
         while (currentPos != null) {
             val be = world.getBlockEntity(currentPos) ?: break
             if (be !is CommandBlockBlockEntity) break
+            if (be.pos != this && be.commandBlockType != CommandBlockBlockEntity.Type.SEQUENCE) break
 
             if (be.pos != this) chain.add(be)
 
