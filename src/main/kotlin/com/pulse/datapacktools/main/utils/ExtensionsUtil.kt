@@ -2,6 +2,7 @@ package com.pulse.datapacktools.main.utils
 
 import net.minecraft.block.CommandBlock
 import net.minecraft.block.entity.BlockEntity
+import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.block.entity.CommandBlockBlockEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.hit.BlockHitResult
@@ -37,6 +38,7 @@ object ExtensionsUtil {
         while (currentPos != null) {
             val be = world.getBlockEntity(currentPos) ?: break
             if (be !is CommandBlockBlockEntity) break
+            if (be.commandBlockType == CommandBlockBlockEntity.Type.SEQUENCE) break
 
             if (be.pos != this) chain.add(be)
 
